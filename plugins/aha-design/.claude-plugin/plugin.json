@@ -1,0 +1,10 @@
+{
+  "name": "aha-design",
+  "description": "AhaSlides design-system guidelines for building product UI (public extract). Covers: Ant Design v6 conventions (theme/token system, ConfigProvider, colour usage, white-background default, AI-only gradients, the enforced Button system, WCAG AA contrast on custom components) with an antd judge and a background judge; settings/configuration UX (setting-name format, toggle vs checkbox, help text and ? tooltips, grouping and spacing, plan-gating, danger zones, surface placement, and the slide-type right-panel config pattern — the option-list 'Items' component and section ordering) with a settings judge; slide-type canvas design (16:9 stage, theme-driven colours, WCAG room readability, framed vs full-canvas, iframe embedding, the NCB control bar) with a canvas judge; audience-screen design (join, response, results, leaderboard on the participant iframe) with an audience judge; product typography (an 18-role type scale) with a typography judge; the canonical data grid (one shared DataTable on Ant Design v6) with a table judge; paywall/upsell UI, status badges, modal/drawer/popover overlays, feedback and notifications (toasts, alert banners, inline feedback), and shared UI primitives (field errors, a11y components, useIsMobile, ErrorPage, empty/loading states) — each with a paired judge. Every build surface ships a judge that scores a finished implementation PASS/FAIL per rule and feeds concrete fixes back (a build->judge->fix loop), and every judge ships an evals.json review-gate suite. Load whenever an agent designs, builds, or reviews product UI. NOTE: this is a public extract — brand colour/type tokens are AhaSlides' own; swap them for your own brand. Companion skills referenced but NOT included here (icon inventory, measured shared-component visual standard, internal user-research, and the aha-branding token plugin) are AhaSlides-internal.",
+  "version": "0.1.0",
+  "author": {
+    "name": "AhaSlides"
+  },
+  "homepage": "https://github.com/AhaSlides-Product/aha-design-public",
+  "license": "MIT"
+}

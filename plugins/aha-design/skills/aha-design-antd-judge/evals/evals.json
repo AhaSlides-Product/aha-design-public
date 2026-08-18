@@ -1,0 +1,129 @@
+{
+  "skill_name": "aha-design-antd-judge",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review this PR diff for a new date-range widget. Alongside the usual `import { Button, DatePicker } from 'antd'`, the developer added `import { DateRangePicker } from '@mui/x-date-pickers'` and `import { Column } from 'recharts'` for a small usage chart, explaining in the description that AntD's picker 'wasn't flexible enough for this one widget.'",
+      "expected_output": "C1 (One component library — AntD v6 only) FAILs: the diff imports from @mui/x-date-pickers (a banned second UI kit) and charts from recharts instead of @ant-design/plots. Even 'just for one widget' a second library is not allowed. Fix: drop the MUI picker and use AntD DatePicker.RangePicker, and render the chart with @ant-design/plots (Column). All other criteria pass. Overall: NEEDS FIX.",
+      "files": [],
+      "label": "bad-example",
+      "notes": "Targets C1 — banned second component library (MUI) + non-plots chart (recharts).",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C1 is marked FAIL",
+        "Cites the @mui/x-date-pickers import as a banned second UI kit",
+        "Flags recharts as a non-@ant-design/plots chart library"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review a new StatusBadge component. The JSX renders `<span style={{ color: '#6a1ebb', fontSize: '14px', gap: '8px' }}>` with the hex and px values baked directly into the inline style object. No call to theme.useToken() and no --aha-* CSS vars anywhere in the file.",
+      "expected_output": "C2 (No hardcoded hex or px in components) FAILs: the component bakes a literal `#6a1ebb` colour and bare `14px`/`8px` sizes into the inline style instead of consuming theme tokens or --aha-* vars. Fix: pull `const { token } = theme.useToken()` and bind color to `token.colorPrimary`, fontSize to `token.fontSize`, and gap to a size token (or use the --aha-* CSS vars). All other criteria pass. Overall: NEEDS FIX.",
+      "files": [],
+      "label": "bad-example",
+      "notes": "Targets C2 — hardcoded hex + px literals in a component.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C2 is marked FAIL",
+        "Identifies the literal #6a1ebb hex and 14px as the violation",
+        "Fix recommends theme.useToken() / --aha-* token binding"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Review a bespoke promo container. Its CSS sets `border-radius: 13px;` — a value the developer picked by eye to 'look balanced', with no radius token referenced and no Design System reference cited. The same file also does `<Card styles={{ body: { borderRadius: 27 } }}>`, overriding the AntD Card's theme corner at the call site.",
+      "expected_output": "C3 (Border-radius is token-bound, not eyeballed) FAILs: `border-radius: 13px` is an arbitrary eyeballed value matching neither the radius scale (4 · 6 · 8 · 12 · 16 / 50% pill) nor any DS reference, and `borderRadius: 27` is an ad-hoc override of the AntD Card's theme corner. Fix: bind the bespoke box to a radius token / --aha-* var (or the DS reference radius, e.g. 12 for a card) and remove the per-call-site Card corner override so it keeps its theme radius. All other criteria pass. Overall: NEEDS FIX.",
+      "files": [],
+      "label": "bad-example",
+      "notes": "Targets C3 — eyeballed radius off the scale + override of an AntD component corner.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C3 is marked FAIL",
+        "Notes 13px/27 match neither the 4·6·8·12·16 scale nor a DS reference",
+        "Flags the ad-hoc override of the AntD Card theme corner"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Review a hero call-to-action. The code is `<Button type=\"primary\" style={{ height: 52, fontSize: 18, borderRadius: 12, background: '#5A189A' }} className=\"aha-hero-btn\">Start free</Button>` — sized by hand, given a per-feature className, and filled with a bespoke darker purple.",
+      "expected_output": "C4 (Button system honoured) FAILs: the Button is inline-sized with height/fontSize/borderRadius, carries an eslint-blocked `aha-hero-btn` className, and its fill is a bespoke `#5A189A` shade rather than colorPrimary #6a1ebb. Fix: wrap the hero CTA in `<XLButtonScope>`, drop the inline height/fontSize/borderRadius and the aha-hero-btn className, and let the fill be the theme colorPrimary #6a1ebb instead of #5A189A. All other criteria pass. Overall: NEEDS FIX.",
+      "files": [],
+      "label": "bad-example",
+      "notes": "Targets C4 — inline Button sizing, aha-*-btn className, and bespoke CTA fill instead of colorPrimary.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C4 is marked FAIL",
+        "Flags the bespoke #5A189A fill as not colorPrimary #6a1ebb",
+        "Fix recommends <XLButtonScope> and removing inline sizing + aha-hero-btn className"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Review a search form. It renders `<Input style={{ height: 44 }} />` and `<Select style={{ height: 44 }} />` to make the controls 'feel bigger', and it wraps that form section in a second `<ConfigProvider theme={{ token: { colorPrimary: '#f00' } }}>` nested inside the app's root ConfigProvider.",
+      "expected_output": "C5 (Control heights & provider nesting) FAILs: the Input and Select are grown per-instance to height 44 instead of inheriting the root controlHeight (32), and there is an ad-hoc nested `<ConfigProvider>` (not the only sanctioned nested provider, `<XLButtonScope>`). Fix: remove the per-instance height overrides so controls inherit theme controlHeight, and delete the nested ConfigProvider — mount ConfigProvider once at the app root. All other criteria pass. Overall: NEEDS FIX.",
+      "files": [],
+      "label": "bad-example",
+      "notes": "Targets C5 — per-instance control-height growth + ad-hoc nested ConfigProvider.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C5 is marked FAIL",
+        "Flags the height:44 per-instance control override against controlHeight 32",
+        "Flags the nested ConfigProvider that isn't <XLButtonScope>"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Review a custom toolbar. The stylesheet has `button:focus-visible { outline: none; }` removing the global focus ring with no replacement, and a status tag rendered as `<Tag color={ok ? 'green' : 'red'} />` where the pass/fail meaning is carried by colour alone (no icon, text, or shape difference).",
+      "expected_output": "C6 (Focus ring & non-colour state) FAILs: the global `:focus-visible` ring is overridden with `outline: none` on a focusable element with no equivalent replacement, and the Tag conveys ok/not-ok state by colour alone, which fails colour-blind/greyscale users. Fix: remove the `outline: none` (leave the global 2px focus ring intact), and pair the colour with a shape/text/icon change (e.g. a check vs cross glyph or label) so state survives greyscale. All other criteria pass. Overall: NEEDS FIX.",
+      "files": [],
+      "label": "bad-example",
+      "notes": "Targets C6 — focus ring removed + state conveyed by colour alone.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C6 is marked FAIL",
+        "Flags outline: none removing the global :focus-visible ring",
+        "Flags state conveyed by colour alone on the Tag"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Review a custom chip that renders on a dark brand-purple fill. The CSS is `.chip-on-dark { background: var(--aha-colorPrimary); color: var(--aha-colorTextSecondary); }` — reusing the black-alpha secondary text token on top of the dark #6a1ebb fill, giving roughly 1.2:1 contrast.",
+      "expected_output": "C7 (WCAG AA on custom components) FAILs: this bespoke chip hand-picks colours and the black-alpha `colorTextSecondary` token collapses to ~1.2:1 on the dark colorPrimary fill, far below the 4.5:1 body-text AA threshold. Fix: on a dark fill flip the text to `colorWhite` / --brand-white (white on #6a1ebb is ~8.3:1) and re-check against the real rendered background. All other criteria pass. Overall: NEEDS FIX.",
+      "files": [],
+      "label": "bad-example",
+      "notes": "Targets C7 — black-alpha text token on a dark custom fill, below AA.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C7 is marked FAIL",
+        "Notes colorTextSecondary collapses to ~1.2:1 on the dark fill, below 4.5:1",
+        "Fix recommends flipping text to colorWhite / --brand-white"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Review a settings card. Imports are `import { Button, Card, Form, Input, Select } from 'antd'` and `import { Column } from '@ant-design/plots'`. Colours and sizes come from `const { token } = theme.useToken()` (color: token.colorText, fontSize: token.fontSize); a bespoke wrapper uses `borderRadius: token.borderRadiusLG`. The primary action is `<Button type=\"primary\" size=\"large\">Save</Button>` and the hero CTA is `<XLButtonScope><Button type=\"primary\">Start</Button></XLButtonScope>`. Inputs/Selects are left at theme height, ConfigProvider is mounted once at the app root, the global focus ring is untouched, and a selected chip changes colour AND shows a check icon. No custom-coloured components.",
+      "expected_output": "All 7 criteria PASS: single library (AntD v6 + @ant-design/plots), no hardcoded hex/px (values bound to theme tokens), radius from a token (borderRadiusLG), Button sized via size prop / XLButtonScope with colorPrimary fill, controls at theme controlHeight with one root ConfigProvider, focus ring intact and state shown by colour + icon, and no bespoke-coloured components to fail AA. Overall: OK TO SHIP.",
+      "files": [],
+      "label": "good-control",
+      "notes": "Good control — conformant implementation passing all 7 criteria.",
+      "assertions": [
+        "Overall verdict is OK TO SHIP",
+        "C1 through C7 are all marked PASS",
+        "No criterion is marked FAIL"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Review a compact toolbar built entirely on AntD: `import { Button, Tooltip, Space } from 'antd'`. A small Tag uses `borderRadius: token.borderRadiusSM` (4). Buttons are `<Button size=\"small\">` and `<Button type=\"primary\" size=\"middle\">Apply</Button>` — no inline styles, no custom classNames, primary fill left at the theme colorPrimary #6a1ebb. All colours/sizes reference theme.useToken(), controls sit at theme height, ConfigProvider is mounted once at root, the :focus-visible ring is untouched, and there are no bespoke hand-coloured components.",
+      "expected_output": "All 7 criteria PASS: only AntD v6 imported, no hardcoded hex/px (token-bound values), radius from borderRadiusSM (4, on scale), Buttons sized via the size prop with the theme colorPrimary #6a1ebb fill, controls at theme height with a single root ConfigProvider, focus ring intact, and no custom-coloured components to fail AA. Overall: OK TO SHIP.",
+      "files": [],
+      "label": "good-control",
+      "notes": "Good control — minimal conformant toolbar passing all 7 criteria.",
+      "assertions": [
+        "Overall verdict is OK TO SHIP",
+        "C1 through C7 are all marked PASS",
+        "No criterion is marked FAIL"
+      ]
+    }
+  ]
+}

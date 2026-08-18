@@ -1,0 +1,61 @@
+{
+  "skill_name": "aha-design-typography",
+  "evals": [
+    {
+      "id": 0,
+      "name": "page-title-heading1",
+      "prompt": "I'm building the main page title for the AhaSlides dashboard home screen (in-app product UI). Give me the exact CSS — font-family, font-weight, font-size, line-height, letter-spacing — for that title using our product-UI type scale.",
+      "expected_output": "heading1: Plus Jakarta Sans, weight 600, size 48px, line-height 1.2, letter-spacing 0px",
+      "files": [],
+      "assertions": [
+        {"text": "Uses Plus Jakarta Sans (not Inter) as the font-family"},
+        {"text": "font-weight is 600 (SemiBold)"},
+        {"text": "font-size is 48px"},
+        {"text": "line-height is 1.2 (unitless ratio, not a px value)"},
+        {"text": "letter-spacing is 0 / 0px"}
+      ]
+    },
+    {
+      "id": 1,
+      "name": "base-body-text",
+      "prompt": "What CSS should I use for the base body paragraph text in the AhaSlides app UI? Give the exact font-family, weight, size, line-height and letter-spacing from our product type scale.",
+      "expected_output": "body: Plus Jakarta Sans, weight 400, size 14px, line-height 1.5, letter-spacing 0.2px",
+      "files": [],
+      "assertions": [
+        {"text": "Uses Plus Jakarta Sans"},
+        {"text": "font-weight is 400 (Regular)"},
+        {"text": "font-size is 14px (the base body size, not 16)"},
+        {"text": "line-height is 1.5"},
+        {"text": "letter-spacing is 0.2px"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "small-caption",
+      "prompt": "I need to style a small caption / helper line that sits under a form field in the AhaSlides product UI. Give the exact type spec (font, weight, size, line-height, letter-spacing).",
+      "expected_output": "bodySM: Plus Jakarta Sans, weight 400, size 12px, line-height 1.5, letter-spacing 0.3px",
+      "files": [],
+      "assertions": [
+        {"text": "Uses Plus Jakarta Sans"},
+        {"text": "font-weight is 400 (Regular)"},
+        {"text": "font-size is 12px"},
+        {"text": "line-height is 1.5"},
+        {"text": "letter-spacing is 0.3px (subtext spacing, not 0.2)"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "allcaps-eyebrow-label-inter-exception",
+      "prompt": "Style an all-caps eyebrow / overline label that appears above a section heading in the AhaSlides app. What's the exact type spec?",
+      "expected_output": "capitalized: Inter, weight 400, size 14px, line-height normal, letter-spacing 2px, text-transform uppercase",
+      "files": [],
+      "assertions": [
+        {"text": "Uses Inter (the stylized-label exception), NOT Plus Jakarta Sans"},
+        {"text": "font-size is 14px"},
+        {"text": "letter-spacing is 2px"},
+        {"text": "text-transform is uppercase"},
+        {"text": "font-weight is 400"}
+      ]
+    }
+  ]
+}

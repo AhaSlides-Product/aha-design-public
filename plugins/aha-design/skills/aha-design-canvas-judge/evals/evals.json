@@ -1,0 +1,618 @@
+{
+  "skill_name": "aha-design-canvas-judge",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review this slide canvas. QuizCanvas.vue styles the stage with `.quiz-canvas { background-image: url('/assets/quiz-bg.jpg'); color: #FFFFFF; font-family: 'Inter', sans-serif; }` and the title with `.title { color: #313131; font-size: 28px; }`. Is this canvas correct?",
+      "expected_output": "C1 (No hard-coded colours/fonts) FAILs. The canvas hard-codes a background image asset instead of xprops.slide.backgroundImage, uses hex text colours (#FFFFFF, #313131) instead of xprops.slide.textColour, and a hard-coded font-family 'Inter' instead of xprops.presentation.fontFamily. Fix: bind background to xprops.slide.baseColour / xprops.slide.backgroundImage, color to xprops.slide.textColour, and fontFamily to xprops.presentation.fontFamily; only the host-side fallback constants (#ffffff, #313131) are allowed and only as a fallback (e.g. xprops.slide.baseColour ?? '#ffffff'), not the primary paint path. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C1 — hard-coded background image, hex colours, and 'Inter' font",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C1 is marked FAIL",
+        "Flags hard-coded hex colours and 'Inter' font",
+        "Fix binds colour/font to the corresponding xprops"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review this quiz-result canvas. The correct-answer bar is painted `background: option.isCorrect ? xprops.presentationColorPalette[0] : xprops.presentationColorPalette[1]` to distinguish correct from incorrect. Is the state colouring correct?",
+      "expected_output": "C2 (Semantic state colours applied to indicator, not chart) FAILs. State (correct/incorrect) is derived from the deck's presentation palette and painted onto the chart bar — two violations: the presentation palette carries no guarantee of a usable red/green so 'correct' silently shifts per deck, and the meaning is applied to the visualisation layer instead of a dedicated indicator. Fix: bundle the plugin's own semantic tokens (import from the AhaSlides design-system package) and bind colorSuccess/colorError to the ✓/✗ indicator icon; keep the bar fill on xprops.presentationColorPalette[colorIndex]. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C2 — state derived from palette AND applied to the bar",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C2 is marked FAIL",
+        "Flags state derived from presentation palette",
+        "Fix moves semantic tokens to the indicator, bar stays on palette"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Review this slide canvas. QuizResultCanvas.vue renders a sticky `<footer class=\"action-bar\">` inside the iframe with `<button class=\"btn btn--secondary\">← Previous</button>`, `<button class=\"btn btn--primary\">Next</button>`, and `<button class=\"btn btn--primary\">Summarise</button>`. The project runs with canUsePluginActionButtons enabled. Where should these buttons live?",
+      "expected_output": "C3 (Action buttons declared, not rendered inside the canvas) FAILs. Previous/Next/Summarise are rendered as buttons inside the canvas iframe (a sticky footer) while the canUsePluginActionButtons flag is on. These actions must be declared in the plugin manifest's actions array and painted by the host in the presenter control bar (NCB) so they keep the design-system styling, keyboard shortcuts, and sound effects. Fix: remove the in-canvas footer buttons and declare them as actions ({ id, label/icon, variant, shortcut }) in plugin-manifest.json; the canvas should contain no action button elements. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C3 — action buttons rendered in-canvas instead of declared (flag on)",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C3 is marked FAIL",
+        "Notes the flag is on so in-canvas buttons are a FAIL",
+        "Fix declares actions in the manifest for the host NCB to paint"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Review this slide's declared actions array: `actions: [{ id: 'next', label: 'common.next', variant: 'primary' }, { id: 'summarise', label: 'quiz.summarise', variant: 'primary' }, { id: 'reset', label: 'quiz.reset', variant: 'secondary', disabled: () => votes.value === 0 }]`. Is the action shape correct?",
+      "expected_output": "C4 (Action shape correct, sensible variant hierarchy) FAILs. There are two variant: 'primary' actions (next and summarise), leaving the presenter guessing the actual next step — exactly one primary is allowed. Worse, reset's disabled is a function (() => votes.value === 0); the host coerces it with Boolean(action.disabled) and a function literal is always truthy, so the button is permanently disabled regardless of state. Fix: keep only one primary (the obvious next step) and make the rest secondary; pass disabled as a reactive boolean (votes.value === 0), never a function. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C4 — two primaries + function-typed disabled footgun",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C4 is marked FAIL",
+        "Flags two primary variants",
+        "Flags the function-typed disabled as a permanently-disabled footgun"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Review this slide canvas for legibility. Title uses white text `color: #FFFFFF` directly over `background-image: url('/assets/quiz-bg.jpg'); background-size: cover;` with no scrim, card, or defensive layer. Entry labels are sized `text-[2.5vh]` with no floor. Does this pass WCAG AA and readability?",
+      "expected_output": "C5 (Legible against the REAL background — contrast AND size) FAILs on both axes. Contrast: white text sits directly on a photo background with no scrim/card/opaque container, so composited contrast over busy image regions can drop to ~2.8:1, below the 4.5:1 floor — and with no defensive layer it can't be verified, so burden of proof fails. Size: text-[2.5vh] resolves against the small preview/iframe viewport (computing to ~12.4px on the reference stage) with no floor, so it collapses below the ~16px legibility tripwire. Fix: add a translucent scrim (baseColour at ~60% opacity) or a card behind the text to guarantee contrast, and size type with clamp() (e.g. clamp(16px, 2.2vh, 24px)) so it can't drop below the legibility floor. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C5 — no scrim over photo (contrast) + vh-sized type with no floor (size)",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C5 is marked FAIL",
+        "Flags missing scrim over the photo background (contrast axis)",
+        "Flags text-[2.5vh] with no floor collapsing below legibility (size axis)"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Review this quiz result canvas. Correct vs incorrect bars are distinguished only by `background: option.isCorrect ? '#22C55E' : '#9CA3AF'` — no icon, no label, no border, no position change. Any accessibility concern with how correctness is signalled?",
+      "expected_output": "C6 (Non-colour cue paired with every colour-bearing signal) FAILs. Correctness is conveyed by fill colour alone with no paired non-colour cue, which fails colour-blind viewers, projector glare, and room distance. Fix: pair the colour with a non-colour cue — preferably a ✓/✗ icon (with aria-label), or a label/shape/position — so correctness reads without relying on colour. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C6 — correctness signalled by colour only, no icon/label/shape/position",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C6 is marked FAIL",
+        "Flags correct/incorrect distinguished by colour only",
+        "Fix adds a non-colour cue, preferring an icon"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Review this slide's framing. There is no plugin-manifest.json setting for enableFullScreen (it defaults silently), and QuizCanvas.vue renders `<h2 class=\"title\">What is the capital of France?</h2>` at the top of the stage. Is the framed vs full-canvas declaration correct?",
+      "expected_output": "C7 (Framed vs full-canvas chosen intentionally in the manifest) FAILs. The manifest has no explicit setting.enableFullScreen, so the reviewer cannot tell whether the framing is intentional. And in the default framed mode the canvas renders its own title, which duplicates the title the host renders from presentation.title. Fix: declare setting.enableFullScreen explicitly in the manifest, and in framed mode (false) remove the canvas's own title so it doesn't duplicate the host chrome (or set true and take full responsibility for the header). Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C7 — missing enableFullScreen + duplicate title in framed default",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C7 is marked FAIL",
+        "Flags missing setting.enableFullScreen (silent default)",
+        "Flags the canvas duplicating the host title in framed mode"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Review this canvas's i18n. The template hard-codes `<h2 class=\"title\">What is the capital of France?</h2>`, `<button>Previous</button>`, `<button>Next</button>`, a `<div v-if=\"loading\">Loading...</div>` state, and renders `{{ option.votePercent.toFixed(1) }}%`. The plugin's i18n instance is never initialised from xprops. Is localisation correct?",
+      "expected_output": "C8 (Plugin initialises its locale from presentation.language xprop) FAILs. Visible strings (title, Previous/Next, Loading state) are hard-coded English rather than passing through i18n, the plugin's i18n instance is never initialised from xprops.presentation.language (or xprops.currentUser.presenterLanguage) nor reacts to changes, and percentages use toFixed(1) + '%' which assumes '.' as the decimal separator. Fix: initialise the i18n locale from xprops.presentation.language at startup and update on onPresentationUpdate, move all user-visible strings (including aria-labels, placeholders, Loading/Error states) into t(...), and format numbers with Intl.NumberFormat keyed on the current locale. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C8 — hard-coded English, i18n never reads xprops, toFixed percentages",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C8 is marked FAIL",
+        "Flags i18n never initialised from xprops.presentation.language",
+        "Flags hard-coded English and toFixed(1) + '%' formatting"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Review this finished quiz-result slide canvas. The stage binds background to xprops.slide.baseColour, colour to xprops.slide.textColour, and font to xprops.presentation.fontFamily with no hex or Tailwind colours. Semantic colorSuccess/colorError (imported from the bundled design-system package, the real function tokens — not a lookalike brand accent) are applied only to the ✓/✗ indicator icons on bounded filled badges that clear contrast, while bar fills use xprops.presentationColorPalette[option.colorIndex]. Previous/Next/Summarise are declared in plugin-manifest.json's actions array (not rendered in-canvas) with exactly one variant: 'primary' (Next, shortcut Enter), the rest secondary, and disabled passed as a reactive boolean. A translucent scrim (baseColour at ~60% opacity) sits behind text when xprops.slide.backgroundImage is present, and labels use font-size: clamp(16px, 2.2vh, 24px). Correctness pairs colour with a ✓/✗ icon (aria-labelled). The manifest declares setting.enableFullScreen: false and the canvas renders no duplicate title (host owns it). i18n initialises locale from xprops.presentation.language, reacts to onPresentationUpdate, and percentages use Intl.NumberFormat(locale). Cards use rounded-lg (8px) corners, display text is weight 400/600 (no extra-bold), and no surface is a pastel wash under same-tone ink. Is this canvas correct?",
+      "expected_output": "All ten criteria PASS. C1: all colour/font from xprops, no hard-coded values. C2: bundled semantic function tokens on the indicator only (not a lookalike accent), bars on the palette. C3: actions declared in the manifest, none rendered in-canvas. C4: exactly one primary, rest secondary, disabled as a reactive boolean (not a function). C5: scrim guarantees contrast over the background image, the semantic marks sit on bounded fills that clear the floor, and clamp() keeps type above the legibility floor. C6: colour paired with a ✓/✗ icon. C7: setting.enableFullScreen: false declared and no duplicate title. C8: locale initialised from xprops and Intl.NumberFormat used. C9: rounded-lg (≤8px) corners, weight 400/600, no pastel-monotone surface. C10: the canvas renders no bespoke in-canvas controls of its own (actions are host-painted), so the keyboard-shortcut-affordance criterion passes with nothing to violate. Overall: OK TO SHIP",
+      "files": [],
+      "label": "good-control",
+      "notes": "Good control — passes every criterion, guards against a judge that only ever fails",
+      "assertions": [
+        "Overall verdict is OK TO SHIP",
+        "All criteria C1 through C10 are marked PASS",
+        "No criterion is marked FAIL",
+        "Recognises semantic token correctly on indicator and actions correctly declared in manifest"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Review the slide canvas in fixtures/bad-c4-ghost-button/Canvas.vue. The project runs with canUsePluginActionButtons enabled. A 'Show correct answer' action is hand-rendered inside the canvas as a <button> styled `background: transparent; border: 1px solid currentColor`. Is this canvas correct?",
+      "expected_output": "FAILs on C3 and C4. C3 (Action buttons declared, not rendered inside the canvas): the action is rendered in-canvas while canUsePluginActionButtons is on, so it must instead be declared in the plugin manifest's actions array and painted by the host NCB. C4 (Action shape correct, sensible variant hierarchy): even setting the placement aside, the button reads as a transparent ghost/outline button rather than the design-system solid white-background secondary, losing the guaranteed label contrast the white fill provides over any theme colour. Fix: remove the in-canvas button, declare { id: 'showCorrect', label: 'poll.showCorrectAnswer', variant: 'secondary' } in the manifest, and let the host paint the solid white secondary. Overall: NEEDS FIX",
+      "files": [
+        {
+          "path": "fixtures/bad-c4-ghost-button/Canvas.vue"
+        }
+      ],
+      "label": "bad-example",
+      "notes": "C3 + C4 — a slide action hand-rendered in-canvas as a transparent ghost button (flag on). Covers the C4 white-secondary-vs-ghost rule the dataset previously had no case for.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C3 is marked FAIL",
+        "C4 is marked FAIL",
+        "Flags the transparent/ghost button as not the design-system solid white secondary",
+        "Fix declares the action in the manifest for the host to paint"
+      ],
+      "expected": {
+        "overall": "NEEDS FIX",
+        "criteria": {
+          "C3": "FAIL",
+          "C4": "FAIL"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "prompt": "Review the finished slide canvas in fixtures/good-fill-in-the-blanks/Canvas.vue together with its fixtures/good-fill-in-the-blanks/plugin-manifest.json. It binds colour to xprops.slide.textColour and font to xprops.presentation.fontFamily (only a host-side fallback constant, as a fallback); applies bundled colorSuccess/colorError only to the checkmark/cross indicator while bars use xprops.presentationColorPalette; declares Previous/Next in the manifest (one primary, boolean disabled) with no in-canvas action buttons; sizes text with fixed-px type-scale roles (title 48px, body 18px, subhead 24px) — no vh, no clamp; pairs correctness colour with an icon and aria-label; declares setting.enableFullScreen: true and renders its own title; and initialises locale from xprops.presentation.language with Intl.NumberFormat percentages. Corners are ≤8px on containers (the thin bars stay pill-shaped), display text is weight 400/600 (no extra-bold), and no surface is a pastel wash under same-tone ink. Is this canvas correct?",
+      "expected_output": "All ten criteria PASS. C1: colour/font from xprops, no hard-coded values. C2: bundled semantic tokens on the indicator only, bars on the palette. C3: actions declared in the manifest, none in-canvas. C4: exactly one primary, disabled as a boolean. C5: text uses fixed-px type-scale roles (title 48 / body 18 / subhead 24), which the 1280x720 stage transform scales proportionally — no vh, no clamp floor. C6: colour paired with an icon and aria-label. C7: setting.enableFullScreen: true declared and the canvas renders its own title. C8: locale from xprops and Intl.NumberFormat used. C9: weight 400/600 (no extra-bold), container corners ≤8px with the bars as exempt pills, no pastel-monotone surface. C10: the canvas renders no bespoke in-canvas controls (Previous/Next are host-painted NCB actions), so the keyboard-shortcut-affordance criterion passes with nothing to violate. Overall: OK TO SHIP",
+      "files": [
+        {
+          "path": "fixtures/good-fill-in-the-blanks/Canvas.vue"
+        },
+        {
+          "path": "fixtures/good-fill-in-the-blanks/plugin-manifest.json"
+        }
+      ],
+      "label": "good-control",
+      "notes": "Shared good-control — also referenced by the aha-design-canvas build skill as the canonical correct pattern. If the judge ever fails this, the build skill and the judge have drifted.",
+      "assertions": [
+        "Overall verdict is OK TO SHIP",
+        "All criteria C1 through C10 are marked PASS",
+        "No criterion is marked FAIL"
+      ],
+      "expected": {
+        "overall": "OK TO SHIP",
+        "criteria": {
+          "C1": "PASS",
+          "C2": "PASS",
+          "C3": "PASS",
+          "C4": "PASS",
+          "C5": "PASS",
+          "C6": "PASS",
+          "C7": "PASS",
+          "C8": "PASS",
+          "C9": "PASS",
+          "C10": "PASS"
+        }
+      }
+    },
+    {
+      "id": 12,
+      "prompt": "Review the slide canvas in fixtures/bad-c5-waiting-vh/Canvas.vue. The empty-state 'waiting for the room' message that the audience reads is sized text-[2.3vh] — a vh font-size. Colours and font are read from xprops. Is this canvas correct?",
+      "expected_output": "FAILs C5 on the size axis. The meaningful waiting message uses a vh font-size (text-[2.3vh]); vh resolves against the framed iframe viewport (~498px), not the 1280x720 stage that the host transform-scales as a unit, so it renders ~11px and its basis wobbles by framing. Colour/font come from xprops so C1 is fine; the violation is size only. Fix: use a fixed-px type-scale role (text-lg, body 18px) — the stage transform does the scaling, so no vh and no clamp floor. Overall: NEEDS FIX",
+      "files": [
+        {
+          "path": "fixtures/bad-c5-waiting-vh/Canvas.vue"
+        }
+      ],
+      "label": "bad-example",
+      "notes": "C5 size axis — REAL in-product case (2x2 grid waiting message). Isolation case: only C5 should FAIL. Anchors the vh-font-size footgun with a real example; fix is a fixed-px type-scale role, not a clamp floor.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C5 is marked FAIL",
+        "Flags the vh font-size (resolves against the framed iframe viewport, not the stage) as the size violation",
+        "Fix uses a fixed-px type-scale role (not a clamp floor)",
+        "Does not falsely fail C1 (colour/font come from xprops)"
+      ],
+      "expected": {
+        "overall": "NEEDS FIX",
+        "criteria": {
+          "C5": "FAIL",
+          "C1": "PASS"
+        }
+      }
+    },
+    {
+      "id": 13,
+      "prompt": "Review the slide canvas in fixtures/bad-c5-tint-chip-contrast/Canvas.vue. It paints an answer chip with a translucent tint fill (color-mix(currentColor 26%, transparent)) and puts a fixed teal success checkmark and a presentationColorPalette accent border on it. Is the contrast correct?",
+      "expected_output": "FAILs C5 on the contrast axis. The chip is a slide-painted surface, so contrast is measured against that fill, not the deck — and a translucent tint (currentColor 26%) is not a guarantee because the deck shows through. The fixed-colour marks on it are not verified on both polarities: the bundled teal success checkmark on a light tint and the palette accent border on a dark deck can both drop below the floor (4.5:1 text / 3:1 shape). The label derives from currentColor over a currentColor tint so it is self-consistent, but the checkmark and border are not. Fix: verify each fixed-colour mark against the chip fill on a light AND dark deck (or back the chip with an opaque surface / pick a shade that clears the floor both ways). Overall: NEEDS FIX",
+      "files": [
+        {
+          "path": "fixtures/bad-c5-tint-chip-contrast/Canvas.vue"
+        }
+      ],
+      "label": "bad-example",
+      "notes": "C5 contrast axis — a slide-painted translucent tint chip whose fixed-colour marks (semantic token + palette border) are not contrast-verified on both polarities. Covers the slide-painted-surface contrast rule.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C5 is marked FAIL",
+        "Flags that a translucent tint is not a contrast guarantee (the deck shows through)",
+        "Flags the fixed-colour marks (teal checkmark, palette border) as unverified on both light and dark decks",
+        "Does not fault the label, which derives from currentColor over a currentColor tint"
+      ],
+      "expected": {
+        "overall": "NEEDS FIX",
+        "criteria": {
+          "C5": "FAIL"
+        }
+      }
+    },
+    {
+      "id": 14,
+      "prompt": "Review the slide canvas in fixtures/bad-c4-handrolled-button/Canvas.vue. canUsePluginActionButtons is OFF, so an in-canvas action fallback is allowed. The 'Show correct answer' button is styled to look like the correct solid white secondary, but it is a raw <button> with bespoke CSS. Is this correct?",
+      "expected_output": "FAILs C4 on the reuse-the-library axis. Even though the placement is a legitimate fallback (the flag is off) and the button looks like the correct white secondary, it is a hand-rolled <button> with bespoke fill/border/radius CSS instead of the project's Ant Design Vue <Button> under ConfigProvider. A hand-rolled control is a FAIL regardless of how pixel-correct it looks: it drifts off the design system when a token changes and loses the shared hover/focus/disabled, keyboard and a11y behaviour. Fix: render an Ant <Button> themed to the design-system secondary, not a raw element. Overall: NEEDS FIX",
+      "files": [
+        {
+          "path": "fixtures/bad-c4-handrolled-button/Canvas.vue"
+        }
+      ],
+      "label": "bad-example",
+      "notes": "C4 reuse-the-library axis — a hand-rolled control that is pixel-correct is still a FAIL; must use the Ant Design Vue Button, not bespoke CSS. Flag is off so C3 placement is not the issue.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C4 is marked FAIL",
+        "Flags that the control is hand-rolled with bespoke CSS instead of the Ant Design Vue Button",
+        "States a hand-rolled control is a FAIL even when it looks pixel-correct",
+        "Fix uses the library Button (Ant <Button> under ConfigProvider)"
+      ],
+      "expected": {
+        "overall": "NEEDS FIX",
+        "criteria": {
+          "C4": "FAIL"
+        }
+      }
+    },
+    {
+      "id": 15,
+      "prompt": "Review the slide canvas in fixtures/bad-c5-stacked-or-divider/Canvas.vue. The True/False presenter canvas renders the word 'OR' as two letters stacked vertically ('O' over 'R') in a tiny boxed pill between the two answer boxes. Colour and font both come from xprops. Is this canvas correct?",
+      "expected_output": "FAILs C5 on the decorative-treatment axis. 'OR' is a real, legible word but is rendered as two stacked letters in a tiny pill instead of normal horizontal running text — a decorative treatment that destroys legibility at distance, even though colour/font come from xprops (C1 clean) and the pill's contrast is otherwise fine. It reads as a small logo on a laptop and is unreadable from across the room. Fix: render 'OR' as normal horizontal text at a fixed-px type-scale role (e.g. text-base, 16px) — never stack, rotate, or over-track a legible word's letters. Overall: NEEDS FIX",
+      "files": [
+        {
+          "path": "fixtures/bad-c5-stacked-or-divider/Canvas.vue"
+        }
+      ],
+      "label": "bad-example",
+      "notes": "C5 decorative-treatment axis — REAL in-product case (True/False 'OR' divider, letters stacked vertically). Isolation case: only C5 should FAIL. Anchors the vertical-letter-stacking anti-pattern; fix is normal horizontal running text at a type-scale role, not a bigger font or better contrast.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C5 is marked FAIL",
+        "Flags the vertically-stacked 'O'/'R' letters as a decorative treatment that destroys legibility at distance",
+        "Fix renders the word as normal horizontal running text at a fixed-px type-scale role",
+        "Does not falsely fail C1 (colour/font come from xprops)"
+      ],
+      "expected": {
+        "overall": "NEEDS FIX",
+        "criteria": {
+          "C5": "FAIL",
+          "C1": "PASS"
+        }
+      }
+    },
+    {
+      "id": 16,
+      "prompt": "Review this quiz-result canvas. The 'correct' tick is rendered `<span :style=\"{ background: '#fff', color: ahaBrand.teal }\">✓</span>` where `ahaBrand.teal` is the Bright Teal brand accent #20E8B5 — chosen because it looks green. Is the correct-mark colour right?",
+      "expected_output": "C2 (Semantic state colours on the indicator) and C5 (contrast) FAIL. The ✓ uses a bright brand ACCENT (#20E8B5) that merely looks green, not the semantic success FUNCTION token colorSuccess (#16C49A) — so it isn't the design-system success colour and drifts per brand. It also fails contrast: Bright Teal on white is ~1.58:1, far below the 3:1 mark floor. Fix: bind the mark to the bundled colorSuccess function token, and because a light success colour on white is still only ~2.23:1, put it on a bounded fill (a colorSuccess circle with a white ✓) or a dark surface so it clears the floor. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "Rule 1 (AHAM-507) — the correct mark uses a lookalike brand accent, not the function token, and fails contrast. Extends C2 (source) + C5 (contrast).",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C2 is marked FAIL",
+        "C5 is marked FAIL",
+        "Flags the Bright Teal brand accent as not the semantic success function token",
+        "Flags the ~1.58:1 contrast of the teal tick on white"
+      ],
+      "expected": {
+        "overall": "NEEDS FIX",
+        "criteria": {
+          "C2": "FAIL",
+          "C5": "FAIL"
+        }
+      }
+    },
+    {
+      "id": 17,
+      "prompt": "Review this quiz-result canvas. The 'correct' mark is a white ✓ glyph on a filled circular badge whose background is the bundled semantic token colorSuccess (#16C49A, imported from the plugin's own design-system tokens); the incorrect mark is a white ✗ on a colorError badge. Bar fills stay on xprops.presentationColorPalette. Is the correct-mark colour right?",
+      "expected_output": "C2 and C5 PASS on the semantic-mark axis. The mark uses the actual semantic FUNCTION token (colorSuccess / colorError), not a lookalike brand accent, and it sits on a bounded filled badge with a white glyph, so it clears the contrast floor even though colorSuccess on a light surface alone would be only ~2.23:1. The bar stays on the deck palette.",
+      "files": [],
+      "label": "good-control",
+      "notes": "Rule 1 (AHAM-507) AFTER — the function token on a bounded fill with a contrasting glyph; passes both the token-source (C2) and contrast (C5) axes. Focused good-control pinned to C2/C5.",
+      "assertions": [
+        "C2 is marked PASS",
+        "C5 is marked PASS",
+        "Recognises the function token on a bounded fill clears contrast"
+      ],
+      "expected": {
+        "criteria": {
+          "C2": "PASS",
+          "C5": "PASS"
+        }
+      }
+    },
+    {
+      "id": 18,
+      "prompt": "Review this canvas answer card. Each card is `background: color-mix(in srgb, ${accent} 14%, white)` (a pastel wash) with its icon and label set to `color: ${accent}` — the same accent hue, just darker. Is the card styling right?",
+      "expected_output": "C9 (Visual restraint) FAILs. A pastel/tinted surface carrying icon + text in the same hue (the accent at two brightnesses) reads monotone, low-contrast, and 'AI-generated'. Fix: make the surface deck-owned (transparent, ink from xprops.slide.textColour so it tracks and contrasts), or if the tint stays, carry genuinely high-contrast ink with a clear hierarchy — not one hue at two brightnesses. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "Rule 2 (AHAM-507) — pastel wash + same-tone ink (the monotone AI tell). Maps to new C9.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C9 is marked FAIL",
+        "Flags the pastel background paired with same-hue icon/text as a monotone AI look",
+        "Fix uses deck-owned ink or a genuinely high-contrast pairing"
+      ],
+      "expected": {
+        "overall": "NEEDS FIX",
+        "criteria": {
+          "C9": "FAIL"
+        }
+      }
+    },
+    {
+      "id": 19,
+      "prompt": "Review this canvas answer card. The card surface is transparent (deck-owned) and the icon + label bind to xprops.slide.textColour, so they track and contrast against whatever deck theme sits behind them. Is the card styling right?",
+      "expected_output": "C9 (Visual restraint) PASSes on the pastel-monotone axis. The surface is deck-owned and the ink tracks xprops.slide.textColour, so there is no pastel-wash-under-same-tone monotone; the content contrasts against the deck instead of blending into a tint of its own accent.",
+      "files": [],
+      "label": "good-control",
+      "notes": "Rule 2 (AHAM-507) AFTER — deck-owned surface with tracking ink; no monotone pastel. Focused good-control pinned to C9.",
+      "assertions": [
+        "C9 is marked PASS",
+        "Recognises the deck-owned surface + tracking ink avoids the monotone pastel look"
+      ],
+      "expected": {
+        "criteria": {
+          "C9": "PASS"
+        }
+      }
+    },
+    {
+      "id": 20,
+      "prompt": "Review this canvas. The answer boxes use `class=\"rounded-3xl\"` and the score card uses `border-radius: 20px`. Is the corner radius right?",
+      "expected_output": "C9 (Visual restraint) FAILs on the corner-radius axis. Content containers (answer boxes, score card) use rounded-3xl / 20px, well above the design-system cap of 8px (rounded-lg, the borderRadius default) — over-rounded reads toy-like and 'AI'. Fix: use rounded-lg (≤8px) on rectangular containers. Intentionally circular elements — pills, badges, avatars, progress bars — may stay fully rounded; the cap is for boxes. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "Rule 3 (AHAM-507) — over-rounded content containers (>8px). Maps to new C9.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C9 is marked FAIL",
+        "Flags rounded-3xl / 20px on boxes as over the 8px cap",
+        "Fix uses rounded-lg (≤8px) on rectangular containers"
+      ],
+      "expected": {
+        "overall": "NEEDS FIX",
+        "criteria": {
+          "C9": "FAIL"
+        }
+      }
+    },
+    {
+      "id": 21,
+      "prompt": "Review this canvas. The answer boxes and score card use `class=\"rounded-lg\"` (8px), while the thin progress bars keep `border-radius: 999px` pill ends. Is the corner radius right?",
+      "expected_output": "C9 (Visual restraint) PASSes on the corner-radius axis. Rectangular containers use rounded-lg (8px), the design-system cap, and the fully-rounded 999px is on the progress bars — intentionally-pill elements that are exempt from the 8px cap.",
+      "files": [],
+      "label": "good-control",
+      "notes": "Rule 3 (AHAM-507) AFTER — rounded-lg boxes; pills stay fully rounded (exempt). Focused good-control pinned to C9.",
+      "assertions": [
+        "C9 is marked PASS",
+        "Recognises 8px boxes comply and the 999px is an exempt pill/bar"
+      ],
+      "expected": {
+        "criteria": {
+          "C9": "PASS"
+        }
+      }
+    },
+    {
+      "id": 22,
+      "prompt": "Review this canvas. The correct/incorrect count numbers are rendered `class=\"aha-display font-extrabold\"` (font-weight 800). Is the font weight right?",
+      "expected_output": "C9 (Visual restraint) FAILs on the font-weight axis. Display text uses font-extrabold (800); the design system allows weight 400 or 600 only — heavy weights (700/800/900) read heavy and 'AI', and a count set to 800 'for emphasis' is the classic tell. Fix: use weight 600 (font-semibold) for emphasis, or 400 for body. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "Rule 4 (AHAM-507) — extra-bold (800) display text. Maps to new C9.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C9 is marked FAIL",
+        "Flags font-extrabold / weight 800 as heavier than the allowed 400 or 600",
+        "Fix uses weight 600 or 400"
+      ],
+      "expected": {
+        "overall": "NEEDS FIX",
+        "criteria": {
+          "C9": "FAIL"
+        }
+      }
+    },
+    {
+      "id": 23,
+      "prompt": "Review this canvas. The correct/incorrect count numbers are rendered with `:style=\"{ fontWeight: 600 }\"` and body text at weight 400. Is the font weight right?",
+      "expected_output": "C9 (Visual restraint) PASSes on the font-weight axis. Display text uses weight 600 for emphasis and 400 for body — within the allowed 400-or-600 range, with no heavy extra-bold.",
+      "files": [],
+      "label": "good-control",
+      "notes": "Rule 4 (AHAM-507) AFTER — weight 600 emphasis / 400 body. Focused good-control pinned to C9.",
+      "assertions": [
+        "C9 is marked PASS",
+        "Recognises weight 600/400 complies with the restraint rule"
+      ],
+      "expected": {
+        "criteria": {
+          "C9": "PASS"
+        }
+      }
+    },
+    {
+      "id": 24,
+      "prompt": "Review the slide canvas in fixtures/bad-c10-modal-no-focus/Canvas.vue. It is an animated race slide that renders its own 'Race settings' overlay (a bespoke in-canvas control the host control bar does not paint). The trigger toggles the overlay open, but keyboard focus is never moved into it, Tab is not contained (it walks out to the page behind), and closing the overlay does not return focus to the trigger. Colour/font come from xprops and the controls use the library button. Is this canvas correct?",
+      "expected_output": "C10 (Keyboard-shortcut affordances) FAILs on the focus-trap sub-rule. The in-canvas settings overlay opens without moving keyboard focus inside it, does not trap Tab / Shift+Tab within the dialog (focus escapes to the page behind), and does not return focus to the trigger on close — so the overlay is unusable by keyboard and screen-reader users. Colour/font read from xprops so C1 is clean; the violation is C10 only. Fix: on open, move focus to an element inside the dialog and trap Tab/Shift+Tab within it; on close, restore focus to the trigger. Overall: NEEDS FIX",
+      "files": [
+        {
+          "path": "fixtures/bad-c10-modal-no-focus/Canvas.vue"
+        }
+      ],
+      "label": "bad-example",
+      "notes": "C10 focus-trap axis (AHAM-615) — a bespoke in-canvas overlay that opens without moving focus in, traps nothing, and drops focus on close. Isolation case: only C10 should FAIL.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C10 is marked FAIL",
+        "Flags that the overlay opens without moving focus inside it and does not trap Tab",
+        "Flags that focus is not returned to the trigger on close",
+        "Does not falsely fail C1 (colour/font come from xprops)"
+      ],
+      "expected": {
+        "overall": "NEEDS FIX",
+        "criteria": {
+          "C10": "FAIL",
+          "C1": "PASS"
+        }
+      }
+    },
+    {
+      "id": 25,
+      "prompt": "Review the slide canvas in fixtures/bad-c10-nonsquare-chip/Canvas.vue. The labelled 'Start race' control does show its keyboard shortcut inline, but the single-character 'S' chip is styled with border-radius: 9999px and horizontal padding wider than it is tall — a wide pill. Colour/font come from xprops and the button is the library button. Is the shortcut indicator correct?",
+      "expected_output": "C10 (Keyboard-shortcut affordances) FAILs on the square-chip sub-rule. The shortcut is shown inline (good), but a single-character indicator must be rendered as a SQUARE — equal width and height with small rounded corners — and here it is a wide pill (9999px radius, padded wider than tall), which reads as a tag/label rather than a key. Colour/font read from xprops so C1 is clean; the violation is C10 only. Fix: render the one-character chip with equal min-width/height and a small radius (e.g. 4px), not a 9999px pill. Overall: NEEDS FIX",
+      "files": [
+        {
+          "path": "fixtures/bad-c10-nonsquare-chip/Canvas.vue"
+        }
+      ],
+      "label": "bad-example",
+      "notes": "C10 square-chip axis (AHAM-615) — a labelled control whose one-character shortcut chip is a wide pill instead of a square. Isolation case: only C10 should FAIL.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C10 is marked FAIL",
+        "Flags the single-character chip rendered as a wide pill (9999px) instead of a square",
+        "Does not falsely fail C1 (colour/font come from xprops)"
+      ],
+      "expected": {
+        "overall": "NEEDS FIX",
+        "criteria": {
+          "C10": "FAIL",
+          "C1": "PASS"
+        }
+      }
+    },
+    {
+      "id": 26,
+      "prompt": "Review the slide canvas in fixtures/bad-c10-tooltip-not-chip/Canvas.vue. The labelled 'Start race' control carries its keyboard shortcut in a hover-only title='Press S to start' tooltip, with no inline chip next to the label. Colour/font come from xprops and the button is the library button. Is the shortcut indicator correct?",
+      "expected_output": "C10 (Keyboard-shortcut affordances) FAILs on the inline-chip sub-rule. A button with a visible text label must show its shortcut as an always-visible inline chip next to the label; hiding it in a hover-only 'Press X' tooltip makes the presenter hunt for it and hides it from touch entirely. Colour/font read from xprops so C1 is clean; the violation is C10 only. Fix: move the shortcut into an inline <kbd> chip beside the label rather than a title tooltip. Overall: NEEDS FIX",
+      "files": [
+        {
+          "path": "fixtures/bad-c10-tooltip-not-chip/Canvas.vue"
+        }
+      ],
+      "label": "bad-example",
+      "notes": "C10 inline-chip axis (AHAM-615) — a labelled control that hides its shortcut in a 'Press X' tooltip instead of an inline chip. Isolation case: only C10 should FAIL.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C10 is marked FAIL",
+        "Flags the shortcut buried in a 'Press X' tooltip instead of an inline chip next to the label",
+        "Does not falsely fail C1 (colour/font come from xprops)"
+      ],
+      "expected": {
+        "overall": "NEEDS FIX",
+        "criteria": {
+          "C10": "FAIL",
+          "C1": "PASS"
+        }
+      }
+    },
+    {
+      "id": 27,
+      "prompt": "Review the slide canvas in fixtures/bad-c10-icon-no-tooltip/Canvas.vue. It renders an icon-only 'mute music' control with aria-label='Mute' and no tooltip carrying the button's name and shortcut. Colour/font come from xprops and the button is the library button. Is the icon control correct?",
+      "expected_output": "C10 (Keyboard-shortcut affordances) FAILs on the icon-tooltip sub-rule. An icon-only button has no room for an inline shortcut chip, so its tooltip AND aria-label must be the button's NAME plus the shortcut in parentheses — e.g. 'Mute music (M)'. Here the aria-label is a bare 'Mute' and there is no name+shortcut tooltip, so a viewer can't tell what it does or which key toggles it. Colour/font read from xprops so C1 is clean; the violation is C10 only. Fix: set title and aria-label to 'Mute music (M)'. Overall: NEEDS FIX",
+      "files": [
+        {
+          "path": "fixtures/bad-c10-icon-no-tooltip/Canvas.vue"
+        }
+      ],
+      "label": "bad-example",
+      "notes": "C10 icon-tooltip axis (AHAM-615) — an icon-only control with a bare 'Mute' label and no name+shortcut tooltip. Isolation case: only C10 should FAIL.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C10 is marked FAIL",
+        "Flags the icon-only button missing a tooltip whose text is the name plus the shortcut in parentheses",
+        "Does not falsely fail C1 (colour/font come from xprops)"
+      ],
+      "expected": {
+        "overall": "NEEDS FIX",
+        "criteria": {
+          "C10": "FAIL",
+          "C1": "PASS"
+        }
+      }
+    },
+    {
+      "id": 28,
+      "prompt": "Review the slide canvas in fixtures/good-c10-shortcut-affordances/Canvas.vue. Its bespoke in-canvas control cluster: the 'Race settings' overlay moves focus into the dialog on open, traps Tab/Shift+Tab within it, and returns focus to the trigger on close; the labelled 'Start race' button shows its shortcut inline as a square single-character chip; and the icon-only mute button carries the tooltip and aria-label 'Mute music (M)'. Colour/font come from xprops. Are the keyboard-shortcut affordances correct?",
+      "expected_output": "C10 (Keyboard-shortcut affordances) PASSes on all four sub-rules. The settings overlay moves focus inside on open, traps Tab/Shift+Tab, and restores focus to the trigger on close (focus-trap); the labelled Start button shows its shortcut inline (not a 'Press X' tooltip) with the single-character chip rendered as a square (not a pill); and the icon-only mute button carries a name+shortcut tooltip and aria-label 'Mute music (M)'. This is the in-canvas keyboard-affordance pattern done right; C10 OK.",
+      "files": [
+        {
+          "path": "fixtures/good-c10-shortcut-affordances/Canvas.vue"
+        }
+      ],
+      "label": "good-control",
+      "notes": "C10 good-control (AHAM-615) — all four sub-rules satisfied: focus-trapping overlay, square inline chip on a labelled button, name+shortcut tooltip on an icon button. Focused good-control pinned to C10.",
+      "assertions": [
+        "C10 is marked PASS",
+        "Recognises the overlay moves focus in, traps Tab, and restores focus to the trigger on close",
+        "Recognises the labelled button shows its shortcut inline with a square single-character chip",
+        "Recognises the icon-only button carries a name-plus-shortcut tooltip"
+      ],
+      "expected": {
+        "criteria": {
+          "C10": "PASS"
+        }
+      }
+    },
+    {
+      "id": 29,
+      "prompt": "Review the slide canvas in fixtures/bad-c11-fixed-ink-fallback/Canvas.vue. This True/False result paints the 'incorrect' answer box with an opaque light-grey disabled fill, and its label colour is `slideProps.value?.textColour ?? ahaBrand.white`. The winner box beside it derives its ink from its own fill via readableInkOn(). Colour/font come from xprops, the box is opaque, sizes are fixed-px roles, and a ✗ icon provides a non-colour cue. Is the ink correct?",
+      "expected_output": "C11 (Deck-ink fallback reads on its surface) FAILs. The loser label's ink falls back to a FIXED colour (ahaBrand.white) on a bounded filled surface. Default themes leave slide.textColour UNSET, so the fallback is the real paint path on the most common deck — and white ink on the light-grey loser box is invisible. C1 is clean (a `??` fallback is a legitimate default, not a hard-coded paint path) and C5's contrast axis reads the textColour-SET path (which is fine), so only C11 catches it. Fix: derive the fallback from the box's own fill — `slideProps.value?.textColour ?? readableInkOn(LOSER_FILL)` — exactly as the winner box already does, so the default-deck case reads on both polarities. Overall: NEEDS FIX",
+      "files": [
+        {
+          "path": "fixtures/bad-c11-fixed-ink-fallback/Canvas.vue"
+        }
+      ],
+      "label": "bad-example",
+      "notes": "C11 fallback-readability axis (AHAM-507, True/False r55) — a deck-ink `?? fixed colour` fallback on a bounded light-grey box, invisible on the common default (textColour-unset) deck. Isolation case: only C11 should FAIL; C1 and C5 stay clean.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C11 is marked FAIL",
+        "Identifies the fixed textColour fallback as the defect and that it is the real paint path on a default (textColour-unset) deck",
+        "Fix derives the fallback from the box's own fill (readableInkOn), not a constant",
+        "Does not falsely fail C1 (the `??` fallback is a legitimate default, not a hard-code)"
+      ],
+      "expected": {
+        "overall": "NEEDS FIX",
+        "criteria": {
+          "C11": "FAIL",
+          "C1": "PASS"
+        }
+      }
+    },
+    {
+      "id": 30,
+      "prompt": "Review the slide canvas in fixtures/good-c11-readable-ink-fallback/Canvas.vue. Each answer box derives its label ink from its own fill: the winner uses readableInkOn(WINNER_FILL), and the loser uses `slideProps.value?.textColour ?? readableInkOn(LOSER_FILL)` — a luminance flip that returns dark ink on the light-grey box and light ink on a dark fill. Colour/font come from xprops. Is the deck-ink fallback correct?",
+      "expected_output": "C11 (Deck-ink fallback reads on its surface) PASSes. Every deck-ink fallback is derived from the surface it lands on via readableInkOn() — a luminance flip — rather than a fixed constant, so the common default-deck case (slide.textColour unset) still reads whichever polarity the box is painted: dark ink on the light-grey loser box, light ink on a dark fill. This is the fix for the bad-c11-fixed-ink-fallback case; C11 OK.",
+      "files": [
+        {
+          "path": "fixtures/good-c11-readable-ink-fallback/Canvas.vue"
+        }
+      ],
+      "label": "good-control",
+      "notes": "C11 good-control (AHAM-507) — every deck-ink fallback is background-derived via readableInkOn(), so the default (textColour-unset) deck reads on both polarities. Focused good-control pinned to C11.",
+      "assertions": [
+        "C11 is marked PASS",
+        "Recognises each label's fallback is derived from that box's own fill via a luminance flip (readableInkOn), not a fixed constant",
+        "Recognises this keeps the default-deck (textColour-unset) case legible on both polarities"
+      ],
+      "expected": {
+        "criteria": {
+          "C11": "PASS"
+        }
+      }
+    }
+  ]
+}

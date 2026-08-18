@@ -1,0 +1,59 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>aha-design-typography — DS V3</title>
+<style>
+ @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
+ body{margin:0;padding:32px;background:#f5f5f7;color:#1a1a1a;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+ .wrap{max-width:900px;margin:0 auto}
+ h1{font-weight:600;font-size:32px;margin:0 0 2px}
+ .src{color:#707070;font-size:13px;margin:0 0 20px}
+ .callout{background:#f0e4ff;border:1px solid #d3b4ff;color:#430379;border-radius:12px;padding:14px 16px;font-size:13px;line-height:1.5;margin-bottom:24px}
+ h2{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#6A1EBB;margin:26px 0 10px}
+ .card{background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:8px 22px}
+ .role{padding:16px 0;border-bottom:1px dashed #ebebeb}
+ .role:last-child{border-bottom:0}
+ .name{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#8644D4;margin-bottom:6px}
+ .sample{color:#1a1a1a}
+ .meta{font-size:11.5px;color:#707070;margin-top:8px}
+ .meta i{color:#b45309;font-style:italic}
+</style></head><body><div class="wrap">
+ <h1>aha-design-typography</h1>
+ <p class="src">Product UI type scale · nguồn: Figma Design System V3 · render bằng font thật</p>
+ <div class="callout"><b>Product UI</b> (không phải marketing). PJS weight <b>400/600</b> — ngoại lệ: <b>Display 700</b>, nhãn stylized dùng <b>Inter</b>. Line-height = tỷ lệ, letter-spacing = px. Đây là bản để mắt đối chiếu; giá trị chuẩn ở <code>typography.json</code>.</div>
+ <h2>Display (Bold 700 — exception)</h2><div class="card"><div class="role"><div class="name">display1</div>
+    <div class="sample" style="font-family:'Plus Jakarta Sans';font-weight:700;font-size:64px;line-height:1.5;letter-spacing:0px;">Display 1</div>
+    <div class="meta">PJS 700 · 64px · lh 1.5 · ls 0px — <i>Bold 700, hardcoded in Figma (not token-bound) — exception to the 400/600 rule</i></div></div><div class="role"><div class="name">display2</div>
+    <div class="sample" style="font-family:'Plus Jakarta Sans';font-weight:700;font-size:56px;line-height:normal;letter-spacing:0px;">Display 2</div>
+    <div class="meta">PJS 700 · 56px · lh normal · ls 0px — <i>Bold 700 — exception</i></div></div></div><h2>Headings (SemiBold 600)</h2><div class="card"><div class="role"><div class="name">heading1</div>
+    <div class="sample" style="font-family:'Plus Jakarta Sans';font-weight:600;font-size:48px;line-height:1.2;letter-spacing:0px;">Headline Text — H1</div>
+    <div class="meta">PJS 600 · 48px · lh 1.2 · ls 0px</div></div><div class="role"><div class="name">heading2</div>
+    <div class="sample" style="font-family:'Plus Jakarta Sans';font-weight:600;font-size:40px;line-height:1.2;letter-spacing:0px;">Headline Text — H2</div>
+    <div class="meta">PJS 600 · 40px · lh 1.2 · ls 0px</div></div><div class="role"><div class="name">heading3</div>
+    <div class="sample" style="font-family:'Plus Jakarta Sans';font-weight:600;font-size:32px;line-height:1.3;letter-spacing:0px;">Headline Text — H3</div>
+    <div class="meta">PJS 600 · 32px · lh 1.3 · ls 0px</div></div><div class="role"><div class="name">heading4</div>
+    <div class="sample" style="font-family:'Plus Jakarta Sans';font-weight:600;font-size:24px;line-height:1.3;letter-spacing:0px;">Headline Text — H4</div>
+    <div class="meta">PJS 600 · 24px · lh 1.3 · ls 0px</div></div><div class="role"><div class="name">heading5</div>
+    <div class="sample" style="font-family:'Plus Jakarta Sans';font-weight:600;font-size:20px;line-height:1.3;letter-spacing:0.2px;">Headline Text — H5</div>
+    <div class="meta">PJS 600 · 20px · lh 1.3 · ls 0.2px</div></div><div class="role"><div class="name">heading6</div>
+    <div class="sample" style="font-family:'Plus Jakarta Sans';font-weight:600;font-size:18px;line-height:1.3;letter-spacing:0.2px;">Headline Text — H6</div>
+    <div class="meta">PJS 600 · 18px · lh 1.3 · ls 0.2px</div></div></div><h2>Lead & Body</h2><div class="card"><div class="role"><div class="name">lead</div>
+    <div class="sample" style="font-family:'Plus Jakarta Sans';font-weight:600;font-size:14px;line-height:1.5;letter-spacing:0.2px;">Silver mist suffused the deck of the ship.</div>
+    <div class="meta">PJS 600 · 14px · lh 1.5 · ls 0.2px</div></div><div class="role"><div class="name">bodyLG</div>
+    <div class="sample" style="font-family:'Plus Jakarta Sans';font-weight:400;font-size:16px;line-height:1.5;letter-spacing:0.2px;">By the same illusion which lifts the horizon of the sea to the level of the spectator on a hillside.</div>
+    <div class="meta">PJS 400 · 16px · lh 1.5 · ls 0.2px</div></div><div class="role"><div class="name">body</div>
+    <div class="sample" style="font-family:'Plus Jakarta Sans';font-weight:400;font-size:14px;line-height:1.5;letter-spacing:0.2px;">By the same illusion which lifts the horizon of the sea to the level of the spectator.</div>
+    <div class="meta">PJS 400 · 14px · lh 1.5 · ls 0.2px — <i>default body / base UI text</i></div></div><div class="role"><div class="name">bodyBold</div>
+    <div class="sample" style="font-family:'Plus Jakarta Sans';font-weight:600;font-size:14px;line-height:1.5;letter-spacing:0.2px;">By the same illusion which lifts the horizon of the sea.</div>
+    <div class="meta">PJS 600 · 14px · lh 1.5 · ls 0.2px</div></div><div class="role"><div class="name">bodySM</div>
+    <div class="sample" style="font-family:'Plus Jakarta Sans';font-weight:400;font-size:12px;line-height:1.5;letter-spacing:0.3px;">Then came the night of the first falling star.</div>
+    <div class="meta">PJS 400 · 12px · lh 1.5 · ls 0.3px</div></div><div class="role"><div class="name">bodySMBold</div>
+    <div class="sample" style="font-family:'Plus Jakarta Sans';font-weight:600;font-size:12px;line-height:1.5;letter-spacing:0.3px;">Then came the night of the first falling star.</div>
+    <div class="meta">PJS 600 · 12px · lh 1.5 · ls 0.3px</div></div></div><h2>Blockquote</h2><div class="card"><div class="role"><div class="name">blockquote</div>
+    <div class="sample" style="font-family:'Plus Jakarta Sans';font-weight:600;font-size:20px;line-height:1.3;letter-spacing:0.2px;">Apparently we had reached a great height in the atmosphere, for the sky was a dead black.</div>
+    <div class="meta">PJS 600 · 20px · lh 1.3 · ls 0.2px</div></div></div><h2>Stylized labels (Inter)</h2><div class="card"><div class="role"><div class="name">capitalized</div>
+    <div class="sample" style="font-family:Inter;font-weight:400;font-size:14px;line-height:normal;letter-spacing:2px;text-transform:uppercase;">Mellifluous</div>
+    <div class="meta">Inter 400 · 14px · lh normal · ls 2px · uppercase — <i>Inter — stylized label</i></div></div><div class="role"><div class="name">small</div>
+    <div class="sample" style="font-family:Inter;font-weight:400;font-size:12px;line-height:normal;letter-spacing:0px;">Then came the night of the first falling star.</div>
+    <div class="meta">Inter 400 · 12px · lh normal · ls 0px — <i>Inter — stylized label</i></div></div><div class="role"><div class="name">tiny</div>
+    <div class="sample" style="font-family:Inter;font-weight:600;font-size:10px;line-height:normal;letter-spacing:0px;">Then came the night of the first falling star.</div>
+    <div class="meta">Inter 600 · 10px · lh normal · ls 0px — <i>Inter SemiBold — stylized label</i></div></div></div>
+</div></body></html>

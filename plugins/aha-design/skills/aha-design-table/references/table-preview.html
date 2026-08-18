@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DS V3 · Table — interactive (real AntD, themed)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<!-- React + AntD via UMD. Demo pins antd v5 UMD for a zero-build reference;
+     the codebase targets antd v6 — the ConfigProvider token/Table API used here is the same. -->
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
+<script crossorigin src="https://unpkg.com/antd@5/dist/antd.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  html,body { margin:0; background:#f5f5f5; font-family:"Plus Jakarta Sans",-apple-system,system-ui,sans-serif; }
+  .page { max-width: 1160px; margin: 0 auto; padding: 32px 24px 96px; }
+  .banner { background: linear-gradient(90deg,#6a1ebb,#985ae2); color:#fff; border-radius:12px; padding:16px 20px; margin-bottom:28px; }
+  .banner h1 { margin:0 0 4px; font-size:18px; font-weight:700; }
+  .banner p  { margin:0; font-size:12.5px; opacity:.92; }
+  .banner code { background: rgba(255,255,255,.18); padding:1px 5px; border-radius:4px; }
+  .card { background:#fff; border:1px solid #e3e3e3; border-radius:8px; box-shadow:0 1px 3px rgba(26,26,46,.10); overflow:hidden; }
+  .toolbar { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #e3e3e3; }
+  .toolbar .title { font-size:18px; font-weight:600; color:#1a1a1a; }
+  .hint { color:#8a8a8a; font-size:12.5px; margin:10px 2px 0; }
+  /* white header + no vertical header separators, driven by theme below; this only kills the sort-active grey */
+  .ds3 .ant-table-thead > tr > th { background:#fff !important; }
+  .ds3 .ant-table-column-sort { background:#fff !important; }
+  .ds3 .ant-table-thead th.ant-table-column-has-sorters:hover { background:#f9f5ff !important; }
+  .drag-over-left  { box-shadow: inset 3px 0 0 #6a1ebb; }
+  .drag-over-right { box-shadow: inset -3px 0 0 #6a1ebb; }
+  .th-drag { cursor: grab; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/plain" id="source">
+const { useState, useMemo, useRef } = React;
+const { ConfigProvider, Table, Button, Input, InputNumber, Checkbox, Dropdown, Space } = antd;
+
+/* ---- inline icons (phosphor-style; real code uses @phosphor-icons/react) ---- */
+const Ic = ({d, s=16, sw=1.4, fill="none", color="currentColor"}) =>
+  <svg width={s} height={s} viewBox="0 0 16 16" fill={fill} stroke={color} strokeWidth={sw} style={{display:'block'}}><path d={d}/></svg>;
+const EditIc   = () => <Ic d="M11 2.5l2.5 2.5L6 12.5 3 13l.5-3L11 2.5z" />;
+const ExportIc = () => <Ic d="M8 2v8M5 7l3 3 3-3M3 13h10" />;
+const FilterIc = ({active}) => <Ic d="M2.5 4h11M4.5 8h7M6.5 12h3" color={active?'#6a1ebb':'#b5b5b5'} sw={1.3} />;
+const SearchIc = () => <Ic d="M7 12a5 5 0 100-10 5 5 0 000 10zM11 11l3 3" sw={1.4} color="#b5b5b5" />;
+const PinIc    = () => <Ic d="M8 2v5M8 7l-2.5 2.5M8 7l2.5 2.5M5 12.5h6" sw={1.3} color="#4a4a4a" />;
+
+/* ---- sample data ---- */
+const TEAMS = ["Design","Growth","Platform","Content","Sales"];
+const STATES = ["Draft","Published","Closed","Archived"];
+const DATA = Array.from({length: 23}, (_, i) => ({
+  key: String(i+1),
+  name: `Table cell text ${i+1}`,
+  team: TEAMS[i % TEAMS.length],
+  status: STATES[i % STATES.length],
+  responses: (i * 37) % 240,
+  updated: `2026-0${(i%9)+1}-${String((i%27)+1).padStart(2,'0')}`,
+  owner: ["Lan","Brian","Minh","Anh","Trang"][i % 5],
+}));
+
+/* ---- DS V3 checklist filter dropdown (search + checkbox list + Reset/Apply) ---- */
+function ChecklistFilter({ options, setSelectedKeys, selectedKeys, confirm, clearFilters }) {
+  const [q, setQ] = useState("");
+  const shown = options.filter(o => o.toLowerCase().includes(q.toLowerCase()));
+  return (
+    <div style={{ width: 232, padding: "4px 0" }}>
+      <div style={{ padding: "8px 12px" }}>
+        <Input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search in filters"
+               prefix={<SearchIc/>} allowClear />
+      </div>
+      <div style={{ maxHeight: 180, overflow: "auto", padding: "2px 12px" }}>
+        <Checkbox.Group value={selectedKeys} onChange={setSelectedKeys}
+          style={{ display:"flex", flexDirection:"column", gap:10 }}>
+          {shown.map(o => <Checkbox key={o} value={o}>{o}</Checkbox>)}
+        </Checkbox.Group>
+      </div>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center",
+                    padding:"10px 12px 4px", borderTop:"1px solid #e3e3e3", marginTop:6 }}>
+        <Button type="text" size="small" style={{color:"#b5b5b5"}}
+          onClick={()=>{ clearFilters && clearFilters(); setQ(""); confirm(); }}>Reset</Button>
+        <Button type="primary" size="small" onClick={()=>confirm()}>Apply</Button>
+      </div>
+    </div>
+  );
+}
+
+/* ---- DS V3 min/max range filter dropdown ---- */
+function RangeFilter({ setSelectedKeys, selectedKeys, confirm, clearFilters }) {
+  const [min, max] = selectedKeys[0] ? selectedKeys[0].split("|").map(v=>v===""?null:Number(v)) : [null,null];
+  const set = (mn, mx) => setSelectedKeys([`${mn??""}|${mx??""}`]);
+  return (
+    <div style={{ width: 248, padding: "12px 14px" }}>
+      <div style={{fontSize:13,color:"#1a1a1a"}}>Min value</div>
+      <InputNumber value={min} onChange={v=>set(v, max)} placeholder="1" style={{width:"100%",marginTop:6}} />
+      <div style={{fontSize:13,color:"#1a1a1a",marginTop:12}}>Max value</div>
+      <InputNumber value={max} onChange={v=>set(min, v)} placeholder="25" style={{width:"100%",marginTop:6}} />
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center",
+                    padding:"12px 0 0", borderTop:"1px solid #e3e3e3", marginTop:14 }}>
+        <Button type="text" size="small" style={{color:"#b5b5b5"}}
+          onClick={()=>{ clearFilters && clearFilters(); confirm(); }}>Reset</Button>
+        <Button type="primary" size="small" onClick={()=>confirm()}>Apply</Button>
+      </div>
+    </div>
+  );
+}
+
+/* ---- draggable + right-click-freeze header cell ---- */
+function HeaderCell(props) {
+  const { onReorder, colKey, frozenKey, onFreeze, draggableKey, children, ...rest } = props;
+  const ref = useRef(null);
+  const [side, setSide] = useState(null);
+  const isFrozen = frozenKey === draggableKey;
+
+  const dragProps = draggableKey ? {
+    draggable: !isFrozen,
+    onDragStart: e => e.dataTransfer.setData("col", draggableKey),
+    onDragOver: e => { e.preventDefault();
+      const r = ref.current.getBoundingClientRect();
+      setSide(e.clientX < r.left + r.width/2 ? "left" : "right"); },
+    onDragLeave: () => setSide(null),
+    onDrop: e => { e.preventDefault(); const from = e.dataTransfer.getData("col");
+      if (from && from !== draggableKey) onReorder(from, draggableKey, side); setSide(null); },
+    className: (side ? `drag-over-${side} ` : "") + (isFrozen ? "" : "th-drag"),
+  } : {};
+
+  const menu = draggableKey ? {
+    items: [{ key:"freeze", label: isFrozen ? "Defreeze column" : "Freeze column", icon: <PinIc/> }],
+    onClick: () => onFreeze(isFrozen ? null : draggableKey),
+  } : null;
+
+  const cell = <th {...rest} {...dragProps} ref={ref}>{children}</th>;
+  return menu
+    ? <Dropdown menu={menu} trigger={["contextMenu"]}>{cell}</Dropdown>
+    : cell;
+}
+
+const HelpIc = () => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#b5b5b5" strokeWidth="1.3" style={{display:'block'}}>
+    <circle cx="8" cy="8" r="6.5"/><path d="M6.3 6.4a1.7 1.7 0 113 .9c-.6.5-1.3.8-1.3 1.6"/><circle cx="8" cy="11.2" r=".55" fill="#b5b5b5" stroke="none"/>
+  </svg>
+);
+function labelWithHelp(text) {
+  return <Space size={6}>{text}<HelpIc/></Space>;
+}
+
+function App() {
+  const [colOrder, setColOrder] = useState(["name","team","status","responses","owner","updated"]);
+  const [frozenKey, setFrozenKey] = useState(null);
+
+  const reorder = (from, to, side) => setColOrder(prev => {
+    const next = prev.filter(k => k !== from);
+    let idx = next.indexOf(to); if (side === "right") idx += 1;
+    next.splice(idx, 0, from); return next;
+  });
+
+  const baseCols = {
+    name:      { title:"Header", dataIndex:"name", sorter:(a,b)=>a.name.localeCompare(b.name), width:220 },
+    team:      { title:"Team", dataIndex:"team", width:170,
+                 filterDropdown: p => <ChecklistFilter options={TEAMS} {...p}/>,
+                 onFilter:(v,r)=>r.team===v },
+    status:    { title:"Status", dataIndex:"status", width:170,
+                 filterDropdown: p => <ChecklistFilter options={STATES} {...p}/>,
+                 onFilter:(v,r)=>r.status===v },
+    responses: { title:"Responses", dataIndex:"responses", width:160, sorter:(a,b)=>a.responses-b.responses,
+                 filterDropdown: p => <RangeFilter {...p}/>,
+                 onFilter:(v,r)=>{ const [mn,mx]=v.split("|").map(x=>x===""?null:Number(x));
+                   return (mn==null||r.responses>=mn)&&(mx==null||r.responses<=mx); } },
+    owner:     { title:"Owner", dataIndex:"owner", width:150,
+                 filterDropdown: p => <ChecklistFilter options={["Lan","Brian","Minh","Anh","Trang"]} {...p}/>,
+                 onFilter:(v,r)=>r.owner===v },
+    updated:   { title:"Updated", dataIndex:"updated", width:160, sorter:(a,b)=>a.updated.localeCompare(b.updated) },
+  };
+
+  const columns = useMemo(() => {
+    const ordered = frozenKey ? [frozenKey, ...colOrder.filter(k=>k!==frozenKey)] : colOrder;
+    return ordered.map(key => {
+      const c = baseCols[key];
+      return {
+        ...c, key,
+        title: labelWithHelp(c.title),
+        fixed: frozenKey === key ? "left" : undefined,
+        filterIcon: c.filterDropdown ? (filtered => <FilterIc active={filtered}/>) : undefined,
+        onHeaderCell: () => ({ draggableKey:key, onReorder:reorder, frozenKey, onFreeze:setFrozenKey }),
+      };
+    });
+  }, [colOrder, frozenKey]);
+
+  return (
+    <ConfigProvider theme={{
+      token: {
+        colorPrimary:"#6a1ebb", colorLink:"#6a1ebb",
+        colorText:"#1a1a1a", colorTextSecondary:"#8a8a8a",
+        colorBorderSecondary:"#e3e3e3", colorBorder:"#e3e3e3",
+        borderRadius:8, fontFamily:'"Plus Jakarta Sans", system-ui, sans-serif', fontSize:14,
+      },
+      components: {
+        Table: {
+          headerBg:"#ffffff",            // white header (DS V3), not AntD's #fafafa
+          headerColor:"#8a8a8a",         // secondary-grey labels
+          headerSplitColor:"transparent",// no vertical separators in header
+          borderColor:"#e3e3e3",         // horizontal dividers
+          rowHoverBg:"#f9f5ff",          // brand-tinted hover
+          cellPaddingBlock:16, cellPaddingInline:16,
+          headerBorderRadius:0,
+        },
+      },
+    }}>
+      <div className="page">
+        <div className="banner">
+          <h1>DS V3 · Table — interactive (real AntD, themed)</h1>
+          <p>A real <code>&lt;Table&gt;</code> under a <code>ConfigProvider</code> whose <code>components.Table</code> block maps DS V3 → the <code>--aha-*</code> theme.
+             Try: <b>click headers to sort</b>, <b>filter icons</b> (checklist + Min/Max), <b>drag headers to reorder</b>, <b>right-click a header → Freeze</b>, and the <b>page-size</b> selector.</p>
+        </div>
+
+        <div className="card">
+          <div className="toolbar">
+            <div className="title">Table title</div>
+            <Space>
+              <Button icon={<EditIc/>}>Edit columns</Button>
+              <Button icon={<ExportIc/>}>Export</Button>
+            </Space>
+          </div>
+          <Table
+            className="ds3"
+            columns={columns}
+            dataSource={DATA}
+            components={{ header: { cell: HeaderCell } }}
+            scroll={{ x: 1100 }}
+            pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions:["10","20","50"], showLessItems:true }}
+          />
+        </div>
+        <div className="hint">Frozen columns: one at a time — right-click the frozen header to Defreeze. A frozen column pins left with a shadow when you scroll sideways, and can’t be dragged.</div>
+      </div>
+    </ConfigProvider>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+
+<script>
+  // Transform the JSX with the CLASSIC runtime so it uses the global React.createElement
+  // (the automatic runtime would emit `import react/jsx-runtime`, invalid without a bundler).
+  (function () {
+    try {
+      var src = document.getElementById("source").textContent;
+      var out = Babel.transform(src, { presets: [["react", { runtime: "classic" }]] }).code;
+      var s = document.createElement("script");
+      s.textContent = out;
+      document.body.appendChild(s);
+    } catch (e) {
+      document.getElementById("root").innerHTML =
+        '<pre style="color:#f5222d;padding:24px;white-space:pre-wrap">' + (e && e.message || e) + '</pre>';
+      throw e;
+    }
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+[
+  {"query": "design cho tôi trang settings cho app presenter của AhaSlides", "should_trigger": true},
+  {"query": "build me the quiz results screen for the audience view in AhaSlides", "should_trigger": true},
+  {"query": "làm giúp mình giao diện dashboard quản lý survey trong AhaSlides", "should_trigger": true},
+  {"query": "implement a new modal for editing a slide in the AhaSlides editor", "should_trigger": true},
+  {"query": "restyle the audience join screen in our app, it looks dated", "should_trigger": true},
+  {"query": "create a settings form where presenters configure their presentation options", "should_trigger": true},
+  {"query": "mình cần design lại cái panel bên phải của editor cho gọn hơn", "should_trigger": true},
+  {"query": "can you build the leaderboard component for the live quiz screen?", "should_trigger": true},
+  {"query": "design a landing page hero for our new AhaSlides pricing plan", "should_trigger": false},
+  {"query": "làm cho tôi banner quảng cáo cho campaign Black Friday của AhaSlides", "should_trigger": false},
+  {"query": "create a social media graphic announcing the new AhaSlides feature", "should_trigger": false},
+  {"query": "design the onboarding email template for new signups", "should_trigger": false},
+  {"query": "build a marketing slide deck for our product webinar", "should_trigger": false},
+  {"query": "what's the AhaSlides brand font and where do I download it?", "should_trigger": false}
+]

@@ -1,0 +1,470 @@
+{
+  "skill_name": "aha-design-audience-judge",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review this audience iframe slide. The AudiencePoll.vue stylesheet contains `.audience-canvas { color: #313131; font-family: 'Inter', sans-serif; }` and a `.bar-track { background: rgba(0, 0, 0, 0.08); }` rule for the vote-bar tracks. The component also cold-starts with `xprops?.slide?.textColour ?? '#1F2937'` and `xprops?.presentationColorPalette ?? ['#5B5BD6', '#0EA5E9']` fallback constants. Is this audience UI correct?",
+      "expected_output": "C1 (No hard-coded colours/fonts) FAILs. The code uses hard-coded hex text colour (#313131), a hard-coded font-family 'Inter' instead of xprops.presentation.fontFamily, an rgba(0,0,0,0.08) literal for the track (should be color-mix(in srgb, currentColor 8%, transparent)), and hex/palette fallback constants for textColour and presentationColorPalette that flash to the deck's real colours when xprops loads. Fix: read color from xprops.slide.textColour and font from xprops.presentation.fontFamily, replace the rgba track with color-mix(in srgb, currentColor 8%, transparent), and remove the hex/palette fallbacks in favour of a skeleton placeholder guarded by a themeReady check (only #FFFFFF surface and 'Plus Jakarta Sans' font are allowed literals). Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C1 — hard-coded colours/fonts and hex/palette cold-start fallbacks",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C1 is marked FAIL",
+        "Flags the hard-coded 'Inter' font and #313131 hex",
+        "Flags the hex/palette fallback constants as visible-drift"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review this audience quiz slide. After results come in, the vote bar is painted `background: option.isCorrect ? semanticTokens.colorSuccess : semanticTokens.colorError` — the bundled design-system tokens applied directly to the chart bar fill. Is the state colouring correct?",
+      "expected_output": "C2 (Semantic state bundled, on indicator not chart) FAILs. The semantic tokens come from the right source (the plugin's bundled design-system tokens) but are applied to the wrong layer — the chart bar fill. State colours belong on the state indicator (the ✓ icon / status badge / validation border), not the visualisation. Fix: move semanticTokens.colorSuccess/colorError onto the ✓/✗ indicator icon and let the bar fill use xprops.presentationColorPalette[colorIndex] for visualisation. The two layers must stay separated. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C2 — right token source, wrong layer (bar instead of indicator)",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C2 is marked FAIL",
+        "Identifies the violation as the layer (bar) not the source",
+        "Fix keeps bar on palette and moves semantic token to the indicator"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Review this audience slide layout. AudienceRoot.vue renders a `.layout { display: grid; grid-template-columns: 1fr 1fr; }` with a left question panel and a right answer panel, wraps them in `.audience-root { height: 600px; overflow-y: scroll; }`, and there is no onHeightChange call anywhere in the component. Does this meet the mobile-first contract?",
+      "expected_output": "C3 (Mobile-first single column + onHeightChange) FAILs. The layout is a 2-column grid (side-by-side panels) that breaks at phone widths, uses a fixed height: 600px device assumption with inner overflow-y: scroll instead of letting the host shrink-wrap, and never calls onHeightChange so the host cannot size the iframe. Fix: collapse to a single stacked column (flex-direction: column), drop the fixed height and inner scroll, and report content height via window.xprops.onHeightChange(h) on every reflow (e.g. via a ResizeObserver). Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C3 — 2-column layout, fixed height, missing onHeightChange",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C3 is marked FAIL",
+        "Flags the 2-column grid and fixed 600px height",
+        "Flags the missing onHeightChange call"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Review this audience poll slide. On submit it sets submitted=true but renders nothing afterwards — the template only has `<div v-if=\"!submitted\"><OptionList /></div>` and assumes the host shows a waiting screen. Errors are shown via a custom in-iframe `<div class=\"custom-error-banner\">` and there is a hand-rolled `<div class=\"custom-modal-overlay\">` for details. Is the post-submission UX handled correctly?",
+      "expected_output": "C4 (Self-rendered submitted/waiting; host utilities used) FAILs. The plugin renders nothing after submit and relies on a host waiting screen that does not exist for plugins — the iframe goes blank. It also reinvents host utilities: a custom in-iframe error banner instead of xprops.showToastError, and a custom modal overlay instead of openPluginModal. Fix: render the submitted/waiting state inside the iframe (✓ confirmation + calm hold state), route the 'Submitted' notification through xprops.showToastSuccess, surface errors via xprops.showToastError, and use openPluginModal for the bottom-sheet modal. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C4 — blank after submit + custom banner/modal instead of host utilities",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C4 is marked FAIL",
+        "Flags the blank post-submit state (no host waiting screen for plugins)",
+        "Flags custom banner/modal instead of showToastError/openPluginModal"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Review this audience vote slide for accessibility. Vote buttons are styled `.tiny-vote { height: 24px; padding: 2px 8px; }` with `margin-top: 2px` between them, option label text is set to 13px, and the plugin background is left transparent (never explicitly chosen). Does this pass WCAG AA and mobile readability?",
+      "expected_output": "C5 (WCAG AA + touch targets ~44-48px) FAILs. Tap targets are 24px tall (well under the ~44-48px range), spacing between tappables is only 2px (needs at least 8px), option/body text is 13px instead of the mandated exactly 14px, and the plugin background is transparent rather than explicitly chosen, making contrast unpredictable on light and dark decks. Fix: raise vote buttons to ~44-48px min-height, put at least 8px (12px shown in the good example) between them, set body/option/button label text to exactly 14px, and pick an explicit background then verify the 4.5:1 text / 3:1 shape floors against it on both light and dark deck themes. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C5 — undersized tap targets, cramped spacing, wrong body size, unchosen background",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C5 is marked FAIL",
+        "Flags the 24px tap targets and <8px spacing",
+        "Flags body text not being exactly 14px and the transparent/unchosen background"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Review this audience results bar chart. Correct vs incorrect options are distinguished only by `background: option.isCorrect ? '#22C55E' : '#EF4444'` on the bar fill — no icon, no label. The leader row alone gets an inline `<span class=\"leading-chip\">leading</span>` inside the same flex row (no slot reserved on other rows), and the track border is `2px solid var(--textColour)`. Any accessibility concerns?",
+      "expected_output": "C6 (Non-colour cue paired; chart geometry honest) FAILs. Correct/incorrect is conveyed by colour alone with no paired non-colour cue (an icon is preferred). The 'leading' word chip should be an icon (e.g. trophy), and because it sits inline with no fixed-width slot reserved on the other rows it eats the leader row's track so the chart geometry lies. The track border also uses textColour directly (body-type intensity ornament). Fix: pair the colour with a ✓/✗ icon (with aria-label), replace the leading chip with a trophy icon in a fixed-width slot reserved on every row (or a positioned overlay), and derive the track border from color-mix(in srgb, currentColor 10%, transparent). Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C6 — colour-only signal, chip eats track, textColour border",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C6 is marked FAIL",
+        "Flags correct/incorrect distinguished by colour only",
+        "Flags the chip eating the track and the textColour border"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Review this audience plugin's declaration. The plugin-manifest.json has `{ \"name\": \"live-poll\", \"audienceUrl\": \"/join/live-poll/audience\" }` with no setting block at all, and AudiencePage.vue renders `<h1 class=\"question-title\">What's your favourite framework?</h1>`. Is the framed/full-canvas declaration correct?",
+      "expected_output": "C7 (Framed vs full-canvas in manifest) FAILs. The manifest has no setting.enableFullScreen field, so it falls to a silent default and the reviewer cannot tell whether framed or full-canvas was intended. On top of that, in the default framed mode the audience page renders its own question title, which duplicates the title the host paints above the iframe. Fix: add an explicit setting.enableFullScreen to the manifest, and in framed mode (false) remove the plugin's own question title so it doesn't duplicate the host chrome. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C7 — missing enableFullScreen + duplicate title in framed mode",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C7 is marked FAIL",
+        "Flags the missing setting.enableFullScreen field",
+        "Flags the duplicate question title in framed mode"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Review this audience slide's i18n. main.ts creates i18n with `createI18n({ locale: 'en', messages: { en: {} } })` and never reads xprops. The template hard-codes `<h2>What's your favourite framework?</h2>`, `<button>Submit</button>`, a `<div v-if=\"loading\">Loading...</div>` state, and renders percentages via `option.pct.toFixed(1) + '%'`. Is localisation handled correctly?",
+      "expected_output": "C8 (Plugin locale initialised from xprops) FAILs. The i18n instance hard-defaults to 'en' and never initialises from xprops.presentation.language (fallback xprops.currentUser.presenterLanguage) or reacts to host locale changes. There is hard-coded English in the heading, Submit button, and Loading state, and percentages use toFixed(1) + '%' which breaks locales that use ',' as the decimal separator. Fix: set the i18n locale from xprops.presentation.language at startup and update on onPresentationUpdate, move all visible strings (including the Loading/Submit states, aria-labels, placeholders) into t(...), and format numbers with Intl.NumberFormat(locale). Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C8 — i18n never reads xprops, hard-coded English, toFixed percentages",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C8 is marked FAIL",
+        "Flags i18n defaulting to 'en' and never reading xprops",
+        "Flags hard-coded English and toFixed(1) + '%' formatting"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Review this audience submit button. It is `<button class=\"submit\" @click=\"handleSubmit\" style=\"background: #4F46E5; color: white\">Submit</button>` — a hard-coded brand hex background, label text hard-coded 'Submit', no disabled state when input is invalid, and when submitting it swaps the whole button for a `<div class=\"spinner-only\" />` (label disappears). There is no locked state when the host stops submission and no onSubmitButtonHeightChange call. Does the submit button match the standard spec?",
+      "expected_output": "C9 (Submit button matches the standard spec) FAILs. The background is a hard-coded brand hex instead of an accent shade from xprops.presentationColorPalette / presentationLighterColorPalette, the label 'Submit' is hard-coded rather than via t(...), there is no disabled/aria-disabled state for invalid input (user can submit empty), the spinner replaces the whole button so the layout shifts during submit, there is no locked state when the host stops submission, no onSubmitButtonHeightChange call for the sticky 'Scroll to submit' pill, and no kebab-case data-testid. Fix: draw the background from xprops.presentationColorPalette, label via t(...), disable+aria-disable on invalid/submitting/closed, render the spinner inline with no layout shift, add a locked state (lock icon + i18n 'closed' label) on stopSubmission, call onSubmitButtonHeightChange with the button's y-offset, and add a data-testid like audience-<slidetype>-submit-button. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C9 — hard-coded colour/label, no disabled/locked state, spinner layout shift, missing wiring",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C9 is marked FAIL",
+        "Flags hard-coded brand hex background and hard-coded 'Submit' label",
+        "Flags missing disabled/locked states, spinner layout shift, and missing onSubmitButtonHeightChange/data-testid"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Review this finished audience quiz iframe. All colours read from xprops.slide.textColour and the palette, font from xprops.presentation.fontFamily, and semantic colorSuccess/colorError (imported from the bundled design-system tokens, the real function tokens — not a lookalike brand accent) are applied only to the ✓/✗ indicator icons on bounded filled badges that clear contrast, while bar fills use xprops.presentationColorPalette[i]. The layout is a single stacked column that reports height via a ResizeObserver → xprops.onHeightChange, with no horizontal scroll at 320px. After submit it renders a ✓ 'Submitted' state and calls xprops.showToastSuccess. Vote buttons are 48px tall with 12px spacing, body text is exactly 14px at line-height 1.5, inputs 16px, header handled by host chrome. Correct/incorrect pairs colour with a ✓/✗ icon (aria-labelled) and a trophy leader cue sits in a fixed-width slot on every row; track borders use color-mix(in srgb, currentColor 10%, transparent). The manifest declares setting.enableFullScreen: false and the page renders no duplicate title. i18n initialises locale from xprops.presentation.language (fallback presenterLanguage), updates on onPresentationUpdate, and formats percentages with Intl.NumberFormat(locale). The full-width submit button uses xprops.presentationColorPalette[0], t(...) label, disabled+aria-disabled states, an inline spinner with no layout shift, a locked state on stopSubmission, calls onSubmitButtonHeightChange, and has data-testid=\"audience-quiz-submit-button\". Option tiles and the submit button use ≤8px corners, text weight is 400/600 (no extra-bold), and no surface is a pastel wash under same-tone ink. Is this audience UI correct?",
+      "expected_output": "All ten criteria PASS. C1: all colour/font from xprops, no hard-coded values. C2: bundled semantic function tokens applied to the indicator only (not a lookalike accent), bars use the palette. C3: single-column layout with onHeightChange, no horizontal scroll at 320px. C4: self-renders submitted/waiting via ✓ state and uses showToastSuccess for feedback. C5: 48px tap targets, 12px spacing, body exactly 14px / line-height 1.5, inputs 16px, contrast on chosen background. C6: colour paired with ✓/✗ and trophy icons, leader cue in a fixed-width slot so chart geometry stays honest, subtle color-mix borders. C7: setting.enableFullScreen: false declared and no duplicate title. C8: locale initialised from xprops and Intl.NumberFormat used. C9: submit button matches the standard spec (palette background, t label, disabled/locked states, inline spinner, height wiring, data-testid). C10: ≤8px corners, weight 400/600, no pastel-monotone surface. Overall: OK TO SHIP",
+      "files": [],
+      "label": "good-control",
+      "notes": "Good control — passes every criterion, guards against a judge that only ever fails",
+      "assertions": [
+        "Overall verdict is OK TO SHIP",
+        "All criteria C1 through C10 are marked PASS",
+        "No criterion is marked FAIL",
+        "Recognises the semantic token is correctly on the indicator not the bar"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Review this audience quiz slide. The 'correct' tick shown to the audience is rendered `<span :style=\"{ background: '#fff', color: ahaBrand.teal }\">✓</span>` where ahaBrand.teal is the Bright Teal brand accent #20E8B5 — picked because it looks green. Is the correct-mark colour right?",
+      "expected_output": "C2 (Semantic state on the indicator) and C5 (contrast) FAIL. The ✓ uses a bright brand ACCENT (#20E8B5) that merely looks green, not the semantic success FUNCTION token colorSuccess (#16C49A) — so it isn't the design-system success colour and drifts per brand. It also fails contrast: Bright Teal on the white phone surface is ~1.58:1, far below the 3:1 mark floor. Fix: bind the mark to the bundled colorSuccess function token, and because a light success colour on white is still only ~2.23:1, put it on a bounded fill (a colorSuccess badge with a white ✓) so it clears the floor. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "Rule 1 (AHAM-507) — the correct mark uses a lookalike brand accent, not the function token, and fails contrast on the phone surface. Extends C2 (source) + C5 (contrast).",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C2 is marked FAIL",
+        "C5 is marked FAIL",
+        "Flags the Bright Teal brand accent as not the semantic success function token",
+        "Flags the ~1.58:1 contrast of the teal tick on the white surface"
+      ],
+      "expected": {
+        "overall": "NEEDS FIX",
+        "criteria": {
+          "C2": "FAIL",
+          "C5": "FAIL"
+        }
+      }
+    },
+    {
+      "id": 12,
+      "prompt": "Review this audience quiz slide. The 'correct' mark is a white ✓ glyph on a filled circular badge whose background is the bundled semantic token colorSuccess (#16C49A, imported from the plugin's own design-system tokens); the incorrect mark is a white ✗ on a colorError badge. Bar fills stay on xprops.presentationColorPalette. Is the correct-mark colour right?",
+      "expected_output": "C2 and C5 PASS on the semantic-mark axis. The mark uses the actual semantic FUNCTION token (colorSuccess / colorError), not a lookalike brand accent, and it sits on a bounded filled badge with a white glyph, so it clears the contrast floor even though colorSuccess on a light surface alone would be only ~2.23:1. The bar stays on the deck palette.",
+      "files": [],
+      "label": "good-control",
+      "notes": "Rule 1 (AHAM-507) AFTER — the function token on a bounded fill with a contrasting glyph; passes both the token-source (C2) and contrast (C5) axes. Focused good-control pinned to C2/C5.",
+      "assertions": [
+        "C2 is marked PASS",
+        "C5 is marked PASS",
+        "Recognises the function token on a bounded fill clears contrast"
+      ],
+      "expected": {
+        "criteria": {
+          "C2": "PASS",
+          "C5": "PASS"
+        }
+      }
+    },
+    {
+      "id": 13,
+      "prompt": "Review this audience option list. Each option chip is `background: color-mix(in srgb, ${accent} 14%, white)` (a pastel wash) with its icon and label set to `color: ${accent}` — the same accent hue, just darker. Is the chip styling right?",
+      "expected_output": "C10 (Visual restraint) FAILs. A pastel/tinted chip carrying icon + text in the same hue (the accent at two brightnesses) reads monotone, low-contrast, and 'AI-generated' on the phone. Fix: bind the ink to xprops.slide.textColour (which tracks and contrasts), or if the tint stays, carry genuinely high-contrast ink with a clear hierarchy — not one hue at two brightnesses. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "Rule 2 (AHAM-507) — pastel wash + same-tone ink on an option chip (the monotone AI tell). Maps to new C10.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C10 is marked FAIL",
+        "Flags the pastel chip paired with same-hue icon/text as a monotone AI look",
+        "Fix uses deck-tracking ink or a genuinely high-contrast pairing"
+      ],
+      "expected": {
+        "overall": "NEEDS FIX",
+        "criteria": {
+          "C10": "FAIL"
+        }
+      }
+    },
+    {
+      "id": 14,
+      "prompt": "Review this audience option list. Each option chip has a transparent surface and its icon + label bind to xprops.slide.textColour, so they track and contrast against whatever background the plugin chose. Is the chip styling right?",
+      "expected_output": "C10 (Visual restraint) PASSes on the pastel-monotone axis. The chip ink tracks xprops.slide.textColour on a chosen surface, so there is no pastel-wash-under-same-tone monotone; the content contrasts rather than blending into a tint of its own accent.",
+      "files": [],
+      "label": "good-control",
+      "notes": "Rule 2 (AHAM-507) AFTER — deck-tracking ink; no monotone pastel. Focused good-control pinned to C10.",
+      "assertions": [
+        "C10 is marked PASS",
+        "Recognises the tracking ink avoids the monotone pastel look"
+      ],
+      "expected": {
+        "criteria": {
+          "C10": "PASS"
+        }
+      }
+    },
+    {
+      "id": 15,
+      "prompt": "Review this audience UI. The option tiles use `class=\"rounded-3xl\"` and the submit button uses `border-radius: 20px`. Is the corner radius right?",
+      "expected_output": "C10 (Visual restraint) FAILs on the corner-radius axis. Content containers (option tiles, submit button) use rounded-3xl / 20px, well above the 8px cap the submit-button spec already lands at — over-rounded reads toy-like and 'AI'. Fix: use ≤8px on rectangular containers. Intentionally circular elements — pills, badges, avatars, progress bars — may stay fully rounded; the cap is for boxes. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "Rule 3 (AHAM-507) — over-rounded content containers (>8px) on the phone. Maps to new C10.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C10 is marked FAIL",
+        "Flags rounded-3xl / 20px on tiles and the submit button as over the 8px cap",
+        "Fix uses ≤8px on rectangular containers"
+      ],
+      "expected": {
+        "overall": "NEEDS FIX",
+        "criteria": {
+          "C10": "FAIL"
+        }
+      }
+    },
+    {
+      "id": 16,
+      "prompt": "Review this audience UI. The option tiles and submit button use `border-radius: 8px`, while the thin timer/progress bar keeps `border-radius: 999px` pill ends. Is the corner radius right?",
+      "expected_output": "C10 (Visual restraint) PASSes on the corner-radius axis. Rectangular containers use 8px, the cap, and the fully-rounded 999px is on the progress bar — an intentionally-pill element that is exempt from the 8px cap.",
+      "files": [],
+      "label": "good-control",
+      "notes": "Rule 3 (AHAM-507) AFTER — 8px boxes; pills stay fully rounded (exempt). Focused good-control pinned to C10.",
+      "assertions": [
+        "C10 is marked PASS",
+        "Recognises 8px boxes comply and the 999px is an exempt pill/bar"
+      ],
+      "expected": {
+        "criteria": {
+          "C10": "PASS"
+        }
+      }
+    },
+    {
+      "id": 17,
+      "prompt": "Review this audience results screen. The correct/incorrect count numbers are rendered `class=\"font-extrabold\"` (font-weight 800). Is the font weight right?",
+      "expected_output": "C10 (Visual restraint) FAILs on the font-weight axis. Text uses font-extrabold (800); the design system allows weight 400 or 600 only (the standard submit button is 600) — heavy weights (700/800/900) read heavy and 'AI', and a count set to 800 'for emphasis' is the classic tell. Fix: use weight 600 for emphasis, or 400 for body. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "Rule 4 (AHAM-507) — extra-bold (800) text on the phone. Maps to new C10.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C10 is marked FAIL",
+        "Flags font-extrabold / weight 800 as heavier than the allowed 400 or 600",
+        "Fix uses weight 600 or 400"
+      ],
+      "expected": {
+        "overall": "NEEDS FIX",
+        "criteria": {
+          "C10": "FAIL"
+        }
+      }
+    },
+    {
+      "id": 18,
+      "prompt": "Review this audience results screen. The correct/incorrect count numbers are rendered with `style=\"font-weight: 600\"` and body text at weight 400. Is the font weight right?",
+      "expected_output": "C10 (Visual restraint) PASSes on the font-weight axis. Text uses weight 600 for emphasis and 400 for body — within the allowed 400-or-600 range, with no heavy extra-bold.",
+      "files": [],
+      "label": "good-control",
+      "notes": "Rule 4 (AHAM-507) AFTER — weight 600 emphasis / 400 body. Focused good-control pinned to C10.",
+      "assertions": [
+        "C10 is marked PASS",
+        "Recognises weight 600/400 complies with the restraint rule"
+      ],
+      "expected": {
+        "criteria": {
+          "C10": "PASS"
+        }
+      }
+    },
+    {
+      "id": 19,
+      "prompt": "Review this audience swipe slide (True/False card). On drag the card animates `.swipe-card.dragging { transform: rotate(14deg) scale(1.04); }`, tuned for feel, with no headroom above the card, and the component reports height with `onHeightChange(card.getBoundingClientRect().height)` from the tilting card element. On a hard swipe the top-leading corner lifts ~35px above the reported top and the host iframe cuts it off. Is this audience animation correct?",
+      "expected_output": "C11 (Transform / animation stays inside the reported box) FAILs. The 14deg + scale transform lifts the top corner past the reported top with no headroom budgeted, so the shrink-wrapped iframe clips the overhang on the extreme frame; and height is reported from the animating element's live rect, so the reported height jitters with the animation instead of describing the resting box. Fix: cap the tilt (e.g. 8deg, which raises the corner far less at zero downward cost), reserve a few px of headroom above the card for the lifted corner, and report height from the resting stage box (offsetHeight of a non-transformed wrapper), not the tilting element. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C11 (AHAM-547) — swipe tilt overhangs the reported box and gets iframe-clipped; height reported from the animating rect. New C11.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C11 is marked FAIL",
+        "Flags that the transform overhangs the reported box with no headroom budgeted",
+        "Flags reporting height from the animating/tilted element instead of the resting box",
+        "Recommends capping the tilt and reserving headroom"
+      ],
+      "expected": {
+        "overall": "NEEDS FIX",
+        "criteria": {
+          "C11": "FAIL"
+        }
+      }
+    },
+    {
+      "id": 20,
+      "prompt": "Review this audience swipe slide (True/False card). The card tilts only `--tilt: 8deg` on drag, a `.card-stage { padding-top: 12px; }` reserves headroom for the lifted corner, and height is reported via `onHeightChange(stage.offsetHeight)` from the non-transformed stage wrapper (a ResizeObserver on the stage). At its most extreme swipe frame the tilted card's bounding box still fits inside the reported height. Is this audience animation correct?",
+      "expected_output": "C11 PASSes. The transform is capped to a small tilt that lives within the budgeted headroom, so the tilted bounding box stays inside the reported box and the iframe does not clip it; height is reported from the resting stage, not the animating element, so the reported height is stable. Correct on the transform-in-box axis.",
+      "files": [],
+      "label": "good-control",
+      "notes": "C11 (AHAM-547) AFTER — small tilt + budgeted headroom + height from the resting box. Focused good-control pinned to C11.",
+      "assertions": [
+        "C11 is marked PASS",
+        "Recognises the capped tilt fits within the budgeted headroom",
+        "Recognises height is reported from the resting box, not the animating element"
+      ],
+      "expected": {
+        "criteria": {
+          "C11": "PASS"
+        }
+      }
+    },
+    {
+      "id": 21,
+      "prompt": "Review this audience swipe slide. The question sits in a fixed-size bounded card that must stay one screen; a long question overflows and the card inner-scrolls (`overflow-y: auto`). There is no fade cue on the scrollable edges, so the audience can't tell there's more below. A teammate's alternate version instead fades the bottom with `background: linear-gradient(transparent, #FFFFFF)` overlaid on the card. Is the bounded-card scrolling handled correctly?",
+      "expected_output": "C3 (bounded-card scroll needs a mask fade) FAILs. The bounded card is allowed to inner-scroll (the one sanctioned exception), but it must signal the overflow with a fade cue and it shows none, so the audience doesn't know content is hidden. The alternate version's coloured `linear-gradient(transparent, #FFFFFF)` overlay is also a FAIL: the audience surface has no forwarded baseColour, so a white fade can't match an unknown deck background and shows as a smear on a dark deck. Fix: fade the overflowing edge(s) with a CSS `mask-image` (fades content to true transparency on any surface), shown only while content overflows and dropped when it all fits. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C3 extension (AHAM-547) — bounded card scrolls with no fade, or a coloured-gradient fade instead of a mask. Extends C3.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C3 is marked FAIL",
+        "Flags the missing fade cue on the scrollable bounded card",
+        "Flags the coloured gradient overlay as unable to match an unknown deck background",
+        "Recommends a CSS mask-image fade shown only on overflow"
+      ],
+      "expected": {
+        "overall": "NEEDS FIX",
+        "criteria": {
+          "C3": "FAIL"
+        }
+      }
+    },
+    {
+      "id": 22,
+      "prompt": "Review this audience swipe slide. The question sits in a fixed-size bounded card. When the content overflows, the card inner-scrolls and applies a `mask-image` that fades whichever edge still has hidden content (top and/or bottom, computed reactively from scrollTop / scrollHeight); the mask is removed when everything fits. The card stays a fixed box and the iframe still shrink-wraps to it — there is no page-level scroll. Is the bounded-card scrolling handled correctly?",
+      "expected_output": "C3 PASSes on the bounded-card axis. This is the sanctioned inner-scroll exception done right: a fixed bounded card scrolls its own overflow, signals it with a mask-image fade on the overflowing edge(s) (which fades to true transparency and so works on any deck background), shows the fade only while content overflows, and keeps the card a fixed box with no page-level scroll. Correct.",
+      "files": [],
+      "label": "good-control",
+      "notes": "C3 extension (AHAM-547) AFTER — bounded card inner-scroll with a reactive mask-image fade, no page scroll. Focused good-control pinned to C3.",
+      "assertions": [
+        "C3 is marked PASS",
+        "Recognises the mask-image fade (not a coloured gradient) as correct for an unknown deck background",
+        "Recognises the fade is shown only while content overflows",
+        "Recognises the card stays a fixed box with no page-level scroll"
+      ],
+      "expected": {
+        "criteria": {
+          "C3": "PASS"
+        }
+      }
+    },
+    {
+      "id": 23,
+      "prompt": "Review this audience swipe slide for gesture smoothness. The frosted card keeps `backdrop-filter: blur(16px)` applied the whole time it is dragged, the drag is driven by animating the card's `left` property each frame (no `will-change: transform`), and on pointer-up it commits only when the drag distance passes a fixed threshold — a fast flick that hasn't travelled far springs back. Is the swipe/drag performance handled correctly?",
+      "expected_output": "C12 FAILs. Three tells: (1) the expensive backdrop-filter blur stays on the moving element so the browser re-samples the blurred backdrop every frame → jank on a phone; it must be dropped while the card is moving (a dragging||flinging||settling flag) and restored on settle. (2) the drag animates `left` (a layout property) instead of `transform`, and there is no will-change:transform — only transform/opacity should animate. (3) commit is distance-only, so a fast flick under the threshold springs back and reads as laggy/unresponsive; it must also commit on a flick-velocity (pointer px/ms) in the drag direction. Other criteria may pass; the verdict is NEEDS FIX on C12.",
+      "files": [],
+      "label": "bad-control",
+      "notes": "C12 (AHAM-548) BEFORE — swipe card keeps its backdrop blur through the drag, animates `left` each frame, and commits on distance only. Pinned to C12.",
+      "assertions": [
+        "C12 is marked FAIL",
+        "Flags the backdrop-filter blur staying on the moving element (re-sampled every frame) → jank; must be dropped while moving and restored on settle",
+        "Flags animating `left` (a layout property) instead of `transform`, and the missing `will-change: transform`",
+        "Flags distance-only commit — a fast flick under the threshold springs back and reads as laggy; must also commit on flick-velocity"
+      ],
+      "expected": {
+        "criteria": {
+          "C12": "FAIL"
+        }
+      }
+    },
+    {
+      "id": 24,
+      "prompt": "Review this audience swipe slide for gesture smoothness. A computed `cardMoving = dragging || flinging || resetting` flag nulls out the card's `backdrop-filter` while it moves and restores `blur(16px)` when it settles; the drag animates only `transform`/`opacity` with `will-change: transform`; pointer velocity is tracked in px/ms across moves and pointer-up commits when the drag passes the distance threshold OR a flick-velocity in that direction. Is the swipe/drag performance handled correctly?",
+      "expected_output": "C12 PASSes. The per-frame-expensive backdrop blur is dropped while the card moves and restored on settle, only compositor properties (transform/opacity) animate with will-change:transform, and the release commits on distance OR flick-velocity so a fast natural flick flings instead of springing back. This is the smooth-swipe pattern done right; C12 OK.",
+      "files": [],
+      "label": "good-control",
+      "notes": "C12 (AHAM-548) AFTER — blur dropped while `cardMoving` and restored on settle, only transform/opacity animate, release commits on distance OR flick-velocity. Pinned to C12.",
+      "assertions": [
+        "C12 is marked PASS",
+        "Recognises the backdrop blur is dropped while the card moves and restored on settle",
+        "Recognises only transform/opacity animate with will-change:transform (no per-frame layout props)",
+        "Recognises the release commits on distance OR flick-velocity so a fast flick flings instead of springing back"
+      ],
+      "expected": {
+        "criteria": {
+          "C12": "PASS"
+        }
+      }
+    },
+    {
+      "id": 25,
+      "prompt": "Review this True/False audience iframe. Above the two labelled buttons it renders a header `<span>True or False</span>`, and between the True and False buttons sits a centred `<span class=\"rounded-full px-3 font-black uppercase tracking-widest shadow-aha-md\">OR</span>` pill. The idle instruction is a full-width `<div class=\"flex w-full items-center justify-center rounded-full font-bold\" :style=\"{ background: cardSurface(ahaBrand.purple, 8), color: ahaBrand.purple }\">Tap your answer — or swipe it</div>`. Is the audience text/UI correct?",
+      "expected_output": "C13 (Text economy) FAILs on both facets. (1) Redundant text: the 'True or False' header restates the two button labels and the 'OR' divider restates that a binary choice is one-or-the-other — the labelled buttons already are the prompt, so both add nothing and must be deleted. (2) Instruction chrome: the 'Tap your answer — or swipe it' hint is wrapped in a full-width, purple-tinted, shadowed, extra-bold pill, so it competes with the actual controls; it should be ONE short line of body-size text in muted deck ink with no container ('Tap or swipe to answer'). Fix: drop the header and the OR divider; render the hint as a plain body-text span in ~60%-opacity deck ink, no pill/card/shadow, shortened wording. Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C13 (AHAM-512) — redundant restating label + 'OR' divider between two labelled options, and an idle instruction boxed in a prominent tinted pill. Real before-state from the True/False audience rebuild.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C13 is marked FAIL",
+        "Flags the 'True or False' header and the 'OR' divider as redundant with the labelled buttons",
+        "Flags the instruction being wrapped in a prominent container (pill/tint/shadow) instead of plain body text",
+        "Recommends plain body-size text in muted deck ink, no container, shortened wording"
+      ]
+    },
+    {
+      "id": 26,
+      "prompt": "Review this True/False audience iframe. It renders just the two labelled buttons `<button>{{ displayTrue }}</button>` / `<button>{{ displayFalse }}</button>` with no header and no divider between them, and the only idle instruction is `<span v-if=\"phase === 'idle'\" class=\"font-semibold\" :style=\"{ fontSize: BODY_TEXT, color: ink(62) }\">{{ labels.tapOrSwipe }}</span>` (\"Tap or swipe to answer\"), unwrapped. Is the audience text/UI correct?",
+      "expected_output": "C13 (Text economy) PASSes. The two labelled buttons carry the prompt with no restating header and no redundant 'OR' divider. The single instruction is one short line of body-size text in muted deck ink (ink(62)) with no container — a quiet hint that does not compete with the controls, using the shortest wording. Overall: PASS on C13.",
+      "files": [],
+      "label": "good-control",
+      "notes": "C13 (AHAM-512) AFTER — no redundant label/divider, instruction is one unboxed body-text line in muted deck ink. Focused good-control pinned to C13.",
+      "assertions": [
+        "C13 is marked PASS",
+        "Notes there is no redundant header or OR divider",
+        "Notes the instruction is plain body-size text with no container, in muted deck ink"
+      ]
+    },
+    {
+      "id": 27,
+      "prompt": "Review this True/False audience iframe running in framed mode (setting.enableFullScreen: false). When the round reveals and this phone never submitted, it renders `<span v-else-if=\"phase === 'revealed' && !answered\" data-testid=\"tof-timesup\" class=\"font-semibold\">{{ labels.timesUp }}</span>` — i.e. its own \"Time's up\" line inside the iframe. Is this correct?",
+      "expected_output": "C14 (Host-owned transient notices) FAILs. In framed mode the host owns the countdown AND its expiry, announcing 'Time's up' in its own chrome above the iframe (like the 'Submitted' toast). A plugin-drawn 'Time's up' inside the iframe double-announces and, being iframe-local, can drift from the host's real clock. Fix: delete the in-iframe tof-timesup notice; let the reveal/result state the plugin owns carry the round-end, and use xprops.timeLimit only as logic (lock input at <= 0). (Only full-canvas mode, where the host hides its chrome, would render its own expiry notice — bound to live xprops.timeLimit.) Overall: NEEDS FIX",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C14 (AHAM-512) — the plugin drew its own 'Time's up' notice in framed mode; removed in commit a976795d. The host announces expiry in its chrome.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C14 is marked FAIL",
+        "Identifies that the host owns the countdown expiry notice in framed mode",
+        "Recommends deleting the in-iframe 'Time's up' and using timeLimit as logic only",
+        "Notes full-canvas mode as the exception"
+      ]
+    },
+    {
+      "id": 28,
+      "prompt": "Review this True/False audience iframe in framed mode. It renders no 'Time's up' text; the round-end is carried by the reveal state `<TofReveal v-if=\"phase === 'revealed'\" :correct=\"correctAnswer\" />`, and xprops.timeLimit is only read as logic: `const submittable = computed(() => roundOpen.value && xprops.timeLimit > 0)`. Is this correct?",
+      "expected_output": "C14 (Host-owned transient notices) PASSes. In framed mode the plugin renders no in-iframe expiry notice — it leaves 'Time's up' to the host chrome and lets the reveal state it owns carry the round-end. xprops.timeLimit is used only as logic (locking submit at <= 0), not as a second visible countdown or banner. Overall: PASS on C14.",
+      "files": [],
+      "label": "good-control",
+      "notes": "C14 (AHAM-512) AFTER — no in-iframe 'Time's up'; host announces expiry, timeLimit used as logic only. Focused good-control pinned to C14.",
+      "assertions": [
+        "C14 is marked PASS",
+        "Notes no in-iframe expiry/'Time's up' notice is rendered in framed mode",
+        "Notes xprops.timeLimit is used as logic only, not a visible countdown"
+      ]
+    }
+  ]
+}

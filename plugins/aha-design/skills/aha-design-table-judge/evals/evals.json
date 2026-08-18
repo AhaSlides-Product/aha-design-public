@@ -1,0 +1,110 @@
+{
+  "skill_name": "aha-design-table-judge",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review a new ResultsTable that renders a leaderboard as a hand-built <div> grid — a header row of <div>s and a mapped list of row <div>s with flor/grid CSS — instead of going through the shared DataTable.",
+      "expected_output": "FAILs C1. A data grid must render through the shared DataTable (AntD <Table> underneath), not a hand-rolled <table>/<div> grid or a bare restyled AntD <Table>. Fix: replace the custom grid with DataTable, passing columns=/dataSource=. Overall NEEDS FIX.",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C1 — shared DataTable, not hand-rolled.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C1 is marked FAIL",
+        "Flags that the grid must render through the shared DataTable, not a hand-built div/table grid"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review a table that does render through DataTable but the call site sets it up as <Table bordered size=\"small\" rowClassName={i => i % 2 ? 'zebra' : ''}> with an inline style rounding the wrapper.",
+      "expected_output": "FAILs C2. The look must be theme-driven (components.Table), not per-table: bordered, size, rowClassName zebra, and inline wrapper styling are all call-site styling. Fix: delete the per-instance bordered/size/rowClassName and wrapper style; the appearance comes from the theme. Overall NEEDS FIX.",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C2 — theme-driven, no per-table styling.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C2 is marked FAIL",
+        "Flags per-table bordered/size/rowClassName/inline styling instead of the components.Table theme"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Review a results grid that leaves AntD's default grey header (#fafafa fill) with bold black column labels.",
+      "expected_output": "FAILs C3. The header must be white (headerBg #fff) with secondary-grey labels (colorTextSecondary) and a bottom divider — never AntD's default grey fill or black/colorText labels. Fix: apply the DS V3 components.Table header tokens (headerBg #fff, headerColor colorTextSecondary). Overall NEEDS FIX.",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C3 — white header + secondary-grey labels.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C3 is marked FAIL",
+        "Flags the grey #fafafa header (must be white with secondary-grey labels)"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Review a data grid rendered with full grid lines (bordered) and alternating light-grey zebra rows.",
+      "expected_output": "FAILs C4. The body has horizontal dividers only (#e3e3e3) — no zebra striping and no vertical grid lines. Fix: remove bordered and the zebra row backgrounds; rely on horizontal dividers from the theme. Overall NEEDS FIX.",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C4 — horizontal dividers only, no zebra/grid lines.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C4 is marked FAIL",
+        "Flags zebra striping and vertical grid lines (bordered); only horizontal dividers allowed"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Review a sortable, filterable participant table: sorting shows AntD's default dual up/down caret, each column has a bespoke inline filter dropdown, and the footer is a hand-rolled pager with no rows-per-page size changer.",
+      "expected_output": "FAILs C5. Shipped behaviour must match DS V3: sort = a single directional arrow (not the dual caret); filter = the canonical checklist (search + Reset/Apply) or Min/Max range popover; pagination = brand-outlined active page + the 'N / page' size changer (showSizeChanger). Fix: override sortIcon to the single arrow, use the canonical filter popovers, and enable the size changer. Overall NEEDS FIX.",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C5 — DS V3 sort/filter/freeze/pagination.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C5 is marked FAIL",
+        "Flags the AntD dual-caret sort (must be a single directional arrow)",
+        "Flags the bespoke filter UI and the missing showSizeChanger"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Review a DataTable whose toolbar uses a 🔍 emoji for search, a 📌 emoji for the freeze/pin action, and an @ant-design/icons FilterOutlined for the filter funnel.",
+      "expected_output": "FAILs C6. Every icon must come from @phosphor-icons/react — emoji-as-icon (🔍, 📌) and @ant-design/icons glyphs are not allowed. Fix: swap them for the equivalent Phosphor glyphs (MagnifyingGlass, PushPin, Funnel). Overall NEEDS FIX.",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C6 — icons from @phosphor-icons/react, no emoji.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C6 is marked FAIL",
+        "Flags emoji-as-icon and the @ant-design/icons import (must be @phosphor-icons/react)"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Review a DataTable whose status cell renderer uses style={{ color: '#6a1ebb' }} and whose container sets borderRadius: 12 as a raw number.",
+      "expected_output": "FAILs C7. Colour and radius must come from tokens (theme.useToken() / --aha-*) and the radius scale — no raw #hex/rgb in a cell renderer and no magic-px radius on the container. Fix: bind the cell colour to a token (or a status pill) and the container radius to token.borderRadius. Overall NEEDS FIX.",
+      "files": [],
+      "label": "bad-example",
+      "notes": "C7 — colour & radius from tokens, no raw hex/px.",
+      "assertions": [
+        "Overall verdict is NEEDS FIX",
+        "C7 is marked FAIL",
+        "Flags the raw #6a1ebb hex in the cell renderer and the magic-px borderRadius: 12 (must be tokens)"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Review a leaderboard rendered via the shared DataTable: theme-driven look (components.Table, no per-instance bordered/size/rowClassName), white header with secondary-grey labels and a bottom divider, horizontal dividers only, single-arrow sort, canonical checklist filter with Reset/Apply, right-click freeze that pins leftmost, pagination with the 'N / page' size changer, all glyphs from @phosphor-icons/react, and colour/radius bound to theme.useToken() (container borderRadius = token.borderRadius = 8). Column freeze is not used on this table.",
+      "expected_output": "All applicable criteria PASS (C5 freeze marked N/A since the table doesn't use it); overall OK TO SHIP. This is the control case — the judge must not invent fails on a correct DS V3 grid, and must accept N/A for an absent feature.",
+      "files": [],
+      "label": "good-control",
+      "notes": "Positive control — correct DS V3 DataTable. Guards against a judge that only ever fails and confirms N/A handling for an absent feature (freeze).",
+      "assertions": [
+        "Overall verdict is OK TO SHIP",
+        "C1 through C7 are PASS (with any absent feature marked N/A, not FAIL)",
+        "Does not invent fails on a correct theme-driven DataTable"
+      ]
+    }
+  ]
+}

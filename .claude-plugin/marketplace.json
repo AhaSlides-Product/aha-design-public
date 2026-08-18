@@ -1,0 +1,20 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "aha-design-public",
+  "owner": {
+    "name": "AhaSlides"
+  },
+  "metadata": {
+    "description": "Public extract of the AhaSlides design-system plugin: guidelines and paired judges for building product UI (Ant Design v6, settings/config UX, slide-type canvas + iframe, audience screen, typography, tables, overlays, paywall, feedback, status badges, shared primitives).",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "aha-design",
+      "description": "AhaSlides design-system guidelines and PASS/FAIL judges for building and reviewing product UI. Public extract — internal-only skills (icon inventory, measured shared-component standard, user research) are excluded; brand tokens are AhaSlides' own and meant to be swapped for your brand.",
+      "version": "0.1.0",
+      "source": "./plugins/aha-design",
+      "category": "design"
+    }
+  ]
+}

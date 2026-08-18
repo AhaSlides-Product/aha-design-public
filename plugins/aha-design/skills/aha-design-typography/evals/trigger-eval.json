@@ -1,0 +1,22 @@
+[
+  {"query": "in the presenter settings panel i'm adding a section header above the toggles — what font size and weight should it be? we use plus jakarta sans", "should_trigger": true},
+  {"query": "what's the right line-height for the body copy on the audience join screen — that paragraph of instructions under the room code?", "should_trigger": true},
+  {"query": "building the results dashboard card, need to style the small metric label under each number — is that the 12px caption style or something else in our app type scale?", "should_trigger": true},
+  {"query": "our editor's slide-title input renders at ~22px right now and doesn't match anything. which heading role should it snap to?", "should_trigger": true},
+  {"query": "adding an all-caps eyebrow label above the quiz question in the audience app — what letter-spacing and which font do we use for those little uppercase tags?", "should_trigger": true},
+  {"query": "code review on a new dashboard modal: it sets font-weight 500 on the title. is 500 even allowed in our product UI type scale?", "should_trigger": true},
+  {"query": "which text style is the default for base UI text — list rows, form labels — in the aha-survey app? need the exact size and weight", "should_trigger": true},
+  {"query": "the presenter empty-state has a big headline and a smaller subtext line. what sizes and weights for each so it matches the design system?", "should_trigger": true},
+  {"query": "i need the exact px size and line-height for H3 vs H4 in the app so i can wire up the CSS variables", "should_trigger": true},
+  {"query": "designing a blockquote style for a testimonial shown inside the product results screen — what size/weight/line-height should it use?", "should_trigger": true},
+  {"query": "setting the typography for our new pricing landing page hero — what weight for the big headline and the subhead under it?", "should_trigger": false},
+  {"query": "making a social graphic for the product hunt launch — what font and weight should the big claim text be?", "should_trigger": false},
+  {"query": "writing the onboarding email template — what font size for the headline and the body copy in the email?", "should_trigger": false},
+  {"query": "what's the official AhaSlides brand font and where do i download it?", "should_trigger": false},
+  {"query": "designing slide master templates for a marketing webinar deck — how should the heading and body type be treated?", "should_trigger": false},
+  {"query": "our marketing blog post headers look inconsistent — what typography hierarchy should the blog use?", "should_trigger": false},
+  {"query": "what colour should a 'published' status badge be in the dashboard survey list?", "should_trigger": false},
+  {"query": "which icon and what size for the settings gear in the presenter toolbar?", "should_trigger": false},
+  {"query": "this component hardcodes a hex colour instead of using our semantic colour tokens — which token should it use?", "should_trigger": false},
+  {"query": "can you rewrite this button label text to title case and make it shorter and punchier?", "should_trigger": false}
+]

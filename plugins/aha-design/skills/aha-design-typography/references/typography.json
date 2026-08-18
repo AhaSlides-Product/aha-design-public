@@ -1,0 +1,44 @@
+{
+  "$source": "Figma — Design System V3 · 'System Typography' (file MwjvUjVI0HnfwD9EwPXRAy, node 58608-29089)",
+  "$scope": "AhaSlides PRODUCT UI (presenter / audience / editor). NOT marketing — for brand/marketing type use aha-branding-typography.",
+  "$rules": {
+    "families": "Plus Jakarta Sans for everything EXCEPT the stylized label set (Capitalized/Small/Tiny) which uses Inter.",
+    "weights": "Headings + body use ONLY 400 (Regular) and 600 (SemiBold). Two exceptions: Display uses 700 (Bold); the Inter 'Tiny' label uses 600.",
+    "lineHeight": "Expressed as unitless ratios (1.2 / 1.3 / 1.5) or 'normal'. There is NO px line-height scale — the '28px' token in Figma is only the grey label text on the spec page, not a role.",
+    "letterSpacing": "In px. Four categories: headlines 0, subheadings 0.2, paragraph 0.2, subtext 0.3 (Inter caps uses 2).",
+    "usage": "Match a text element to the nearest ROLE below; do not invent in-between sizes/weights."
+  },
+
+  "tokens": {
+    "family":       { "product": "Plus Jakarta Sans", "stylized": "Inter" },
+    "weight":       { "regular": 400, "semibold": 600, "bold": 700 },
+    "size":         { "sm": 12, "default": 14, "l": 16, "xl": 20, "h6": 18, "h4": 24, "h3": 32, "h2": 40, "h1": 48, "display2": 56, "display1": 64 },
+    "lineHeight":   { "tight": 1.2, "heading": 1.3, "body": 1.5, "normal": "normal" },
+    "letterSpacing":{ "headlines": "0px", "subheadings": "0.2px", "paragraph": "0.2px", "subtext": "0.3px", "caps": "2px" }
+  },
+
+  "roles": {
+    "display1":     { "family": "product",  "weight": 700, "size": 64, "lineHeight": 1.5,      "letterSpacing": "0px",   "$note": "Bold 700, hardcoded in Figma (not token-bound) — exception to the 400/600 rule" },
+    "display2":     { "family": "product",  "weight": 700, "size": 56, "lineHeight": "normal", "letterSpacing": "0px",   "$note": "Bold 700 — exception" },
+
+    "heading1":     { "family": "product",  "weight": 600, "size": 48, "lineHeight": 1.2, "letterSpacing": "0px" },
+    "heading2":     { "family": "product",  "weight": 600, "size": 40, "lineHeight": 1.2, "letterSpacing": "0px" },
+    "heading3":     { "family": "product",  "weight": 600, "size": 32, "lineHeight": 1.3, "letterSpacing": "0px" },
+    "heading4":     { "family": "product",  "weight": 600, "size": 24, "lineHeight": 1.3, "letterSpacing": "0px" },
+    "heading5":     { "family": "product",  "weight": 600, "size": 20, "lineHeight": 1.3, "letterSpacing": "0.2px" },
+    "heading6":     { "family": "product",  "weight": 600, "size": 18, "lineHeight": 1.3, "letterSpacing": "0.2px" },
+
+    "lead":         { "family": "product",  "weight": 600, "size": 14, "lineHeight": 1.5, "letterSpacing": "0.2px" },
+    "bodyLG":       { "family": "product",  "weight": 400, "size": 16, "lineHeight": 1.5, "letterSpacing": "0.2px" },
+    "body":         { "family": "product",  "weight": 400, "size": 14, "lineHeight": 1.5, "letterSpacing": "0.2px", "$note": "default body / base UI text" },
+    "bodyBold":     { "family": "product",  "weight": 600, "size": 14, "lineHeight": 1.5, "letterSpacing": "0.2px" },
+    "bodySM":       { "family": "product",  "weight": 400, "size": 12, "lineHeight": 1.5, "letterSpacing": "0.3px" },
+    "bodySMBold":   { "family": "product",  "weight": 600, "size": 12, "lineHeight": 1.5, "letterSpacing": "0.3px" },
+
+    "blockquote":   { "family": "product",  "weight": 600, "size": 20, "lineHeight": 1.3, "letterSpacing": "0.2px" },
+
+    "capitalized":  { "family": "stylized", "weight": 400, "size": 14, "lineHeight": "normal", "letterSpacing": "2px", "textTransform": "uppercase", "$note": "Inter — stylized label" },
+    "small":        { "family": "stylized", "weight": 400, "size": 12, "lineHeight": "normal", "letterSpacing": "0px", "$note": "Inter — stylized label" },
+    "tiny":         { "family": "stylized", "weight": 600, "size": 10, "lineHeight": "normal", "letterSpacing": "0px", "$note": "Inter SemiBold — stylized label" }
+  }
+}
