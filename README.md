@@ -10,11 +10,11 @@ It is a Claude Code **plugin marketplace**: add it, then install the `aha-design
 > legal sign-off** first. It contains AhaSlides design IP (brand colours, exact type scale,
 > component specs). Do not push public until approved.
 
-## What's included (23 skills)
+## What's included (23 skills, two of them settings redirects)
 
 Each build skill ships a paired `-judge` that scores a finished implementation PASS/FAIL per
-rule and suggests fixes (a build → judge → fix loop). Every judge ships an `evals.json` review
-gate.
+rule and suggests fixes (a build → judge → fix loop). Every judge except the settings redirect ships an
+`evals.json` review gate.
 
 | Area | Build skill | Judge |
 |---|---|---|
