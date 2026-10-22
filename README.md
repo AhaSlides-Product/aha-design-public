@@ -10,17 +10,17 @@ It is a Claude Code **plugin marketplace**: add it, then install the `aha-design
 > legal sign-off** first. It contains AhaSlides design IP (brand colours, exact type scale,
 > component specs). Do not push public until approved.
 
-## What's included (23 skills)
+## What's included (23 skills, two of them settings redirects)
 
 Each build skill ships a paired `-judge` that scores a finished implementation PASS/FAIL per
-rule and suggests fixes (a build → judge → fix loop). Every judge ships an `evals.json` review
-gate.
+rule and suggests fixes (a build → judge → fix loop). Every judge except the settings redirect ships an
+`evals.json` review gate.
 
 | Area | Build skill | Judge |
 |---|---|---|
 | Ant Design v6 conventions (tokens, Button system, WCAG AA) | `aha-design-antd` | `aha-design-antd-judge` |
 | Surface background colour (white-by-default) | — | `aha-design-background-judge` |
-| Settings / config UX + slide-type right-panel config | `aha-design-settings` | `aha-design-settings-judge` |
+| Settings / config UX + slide-type right-panel config | moved: `settings-design` in the design-system plugin (`AhaSlides-Product/ahaslides-design`) | moved |
 | Slide-type **canvas** (16:9 stage, framed vs full-canvas, **iframe**) | `aha-design-canvas` | `aha-design-canvas-judge` |
 | **Audience** screen (join/response/results/leaderboard iframe) | `aha-design-audience` | `aha-design-audience-judge` |
 | Product typography (18-role type scale) | `aha-design-typography` | `aha-design-typography-judge` |
